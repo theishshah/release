@@ -6,11 +6,13 @@ approvers:
 - cfergeau
 - enxebre
 - frobware
-- gbraad
-- ingvagabund
 - michaelgugino
 - praveenkumar
-- spangenberg
-- vikaschoudhary16
-- zeenix
 options: {}
+reviewers:
+- bison
+- cfergeau
+- enxebre
+- frobware
+- michaelgugino
+- praveenkumar

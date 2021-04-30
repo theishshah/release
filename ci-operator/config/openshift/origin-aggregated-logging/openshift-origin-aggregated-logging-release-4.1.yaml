@@ -41,23 +41,15 @@ images:
   dockerfile_path: Dockerfile.centos7
   from: base_centos
   to: logging-eventrouter
-- context_dir: rsyslog/
-  dockerfile_path: Dockerfile
-  from: base
-  to: logging-rsyslog
 promotion:
   name: "4.1"
   namespace: ocp
 resources:
   '*':
-    limits:
-      memory: 5Gi
     requests:
       cpu: "1"
       memory: 200Mi
   src:
-    limits:
-      memory: 2Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -66,7 +58,19 @@ tag_specification:
   namespace: ocp
 tests:
 - as: full-integ-aws
-  commands: |
-    . openshift/ci-operator/build-image/setup-logging-for-e2e.sh
-  openshift_installer_src:
+  steps:
     cluster_profile: aws
+    test:
+    - as: test
+      cli: latest
+      commands: |
+        . openshift/ci-operator/build-image/setup-logging-for-e2e.sh
+      from: src
+      resources:
+        requests:
+          cpu: 100m
+    workflow: ipi-aws
+zz_generated_metadata:
+  branch: release-4.1
+  org: openshift
+  repo: origin-aggregated-logging

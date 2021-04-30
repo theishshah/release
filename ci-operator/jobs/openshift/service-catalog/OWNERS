@@ -2,10 +2,15 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
-- eriknelson
-- jboyd01
+- fabianvf
 - jmrodri
-- jpeeler
+- joelanford
 - pmorie
 - shawn-hurley
 options: {}
+reviewers:
+- fabianvf
+- jmrodri
+- joelanford
+- pmorie
+- shawn-hurley

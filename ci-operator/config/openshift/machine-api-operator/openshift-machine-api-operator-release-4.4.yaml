@@ -3,6 +3,10 @@ base_images:
     name: "4.4"
     namespace: ocp
     tag: base
+  openshift_release_golang-1.12:
+    name: release
+    namespace: openshift
+    tag: golang-1.12
 binary_build_commands: NO_DOCKER=1 make build
 build_root:
   image_stream_tag:
@@ -11,14 +15,16 @@ build_root:
     tag: golang-1.12
 images:
 - from: base
+  inputs:
+    openshift_release_golang-1.12:
+      as:
+      - registry.svc.ci.openshift.org/openshift/release:golang-1.12
   to: machine-api-operator
 promotion:
   name: "4.4"
   namespace: ocp
 resources:
   '*':
-    limits:
-      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -43,39 +49,74 @@ tests:
   container:
     from: src
 - as: e2e-aws
-  commands: TEST_SUITE=openshift/conformance/parallel run-tests
-  openshift_installer:
+  steps:
     cluster_profile: aws
+    workflow: openshift-e2e-aws
 - as: e2e-azure
-  commands: TEST_SUITE=openshift/conformance/parallel run-tests
-  openshift_installer:
+  steps:
     cluster_profile: azure4
+    workflow: openshift-e2e-azure
 - as: e2e-aws-operator
-  commands: make test-e2e
-  openshift_installer_src:
+  steps:
     cluster_profile: aws
+    test:
+    - as: test
+      cli: latest
+      commands: make test-e2e
+      from: stable:cluster-api-actuator-pkg
+      resources:
+        requests:
+          cpu: 100m
+    workflow: ipi-aws
 - as: e2e-aws-operator-tech-preview
-  commands: make test-e2e-tech-preview
-  openshift_installer_src:
+  steps:
     cluster_profile: aws
+    test:
+    - as: test
+      cli: latest
+      commands: make test-e2e-tech-preview
+      from: stable:cluster-api-actuator-pkg
+      resources:
+        requests:
+          cpu: 100m
+    workflow: ipi-aws
 - as: e2e-aws-upgrade
-  commands: TEST_SUITE=all run-upgrade-tests
-  openshift_installer:
+  steps:
     cluster_profile: aws
-    upgrade: true
-- as: e2e-aws-scaleup-rhel7
-  commands: TEST_SUITE=openshift/conformance/parallel run-tests
-  openshift_ansible_40:
-    cluster_profile: aws-centos-40
+    workflow: openshift-upgrade-aws
+- as: e2e-aws-workers-rhel7
+  steps:
+    cluster_profile: aws
+    workflow: openshift-e2e-aws-workers-rhel7
 - as: e2e-azure-operator
-  commands: make test-e2e
-  openshift_installer_src:
+  steps:
     cluster_profile: azure4
+    test:
+    - as: test
+      cli: latest
+      commands: make test-e2e
+      from: stable:cluster-api-actuator-pkg
+      resources:
+        requests:
+          cpu: 100m
+    workflow: ipi-azure
 - as: e2e-gcp
-  commands: TEST_SUITE=openshift/conformance/parallel run-tests
-  openshift_installer:
+  steps:
     cluster_profile: gcp
+    workflow: openshift-e2e-gcp
 - as: e2e-gcp-operator
-  commands: make test-e2e
-  openshift_installer_src:
+  steps:
     cluster_profile: gcp
+    test:
+    - as: test
+      cli: latest
+      commands: make test-e2e
+      from: stable:cluster-api-actuator-pkg
+      resources:
+        requests:
+          cpu: 100m
+    workflow: ipi-gcp
+zz_generated_metadata:
+  branch: release-4.4
+  org: openshift
+  repo: machine-api-operator

@@ -3,20 +3,15 @@
 
 approvers:
 - chmouel
-- hrishin
 - sthaha
 - vdemeester
 options: {}
 reviewers:
-- arilivigni
-- bbrowning
 - chmouel
-- hrishin
-- jcrossley3
-- markusthoemmes
-- mgencur
+- khrm
 - nikhil-thomas
 - piyush-garg
 - pradeepitm12
+- savitaashture
 - sthaha
 - vdemeester

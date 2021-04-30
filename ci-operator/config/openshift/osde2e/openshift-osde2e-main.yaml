@@ -1,0 +1,68 @@
+build_root:
+  image_stream_tag:
+    name: release
+    namespace: openshift
+    tag: golang-1.15
+resources:
+  '*':
+    requests:
+      cpu: 100m
+      memory: 200Mi
+tests:
+- as: verify
+  commands: |
+    set -o pipefail
+
+    export HOME=$(mktemp -d)
+
+    export REPORT_DIR=/tmp/artifacts
+
+    ci/prow_pr_check.sh
+  container:
+    from: src
+- as: osde2e-ocm-stage-adoption
+  cron: '@daily'
+  steps:
+    post:
+    - as: cluster-destroy
+      commands: |
+        source ./ci/destroy-ocp-cluster.sh
+      credentials:
+      - mount_path: /usr/local/osde2e-credentials
+        name: osde2e-credentials
+        namespace: test-credentials
+      from: src
+      resources:
+        requests:
+          cpu: 100m
+          memory: 200Mi
+    pre:
+    - as: cluster-create
+      commands: |
+        source ./ci/create-ocp-cluster.sh
+      credentials:
+      - mount_path: /usr/local/osde2e-credentials
+        name: osde2e-credentials
+        namespace: test-credentials
+      from: src
+      resources:
+        requests:
+          cpu: 100m
+          memory: 200Mi
+    test:
+    - as: stage-adoption
+      commands: |
+        source ./ci/prow-ocm-adoption.sh
+      credentials:
+      - mount_path: /usr/local/osde2e-credentials
+        name: osde2e-credentials
+        namespace: test-credentials
+      from: src
+      resources:
+        requests:
+          cpu: 100m
+          memory: 200Mi
+zz_generated_metadata:
+  branch: main
+  org: openshift
+  repo: osde2e

@@ -4,6 +4,74 @@ presubmits:
     always_run: true
     branches:
     - release-4.4
+    cluster: build01
+    context: ci/prow/e2e-aws-csi
+    decorate: true
+    decoration_config:
+      skip_cloning: true
+    labels:
+      ci-operator.openshift.io/prowgen-controlled: "true"
+      pj-rehearse.openshift.io/can-be-rehearsed: "true"
+    name: pull-ci-openshift-csi-external-provisioner-release-4.4-e2e-aws-csi
+    path_alias: github.com/kubernetes-csi/external-provisioner
+    rerun_command: /test e2e-aws-csi
+    spec:
+      containers:
+      - args:
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
+        - --secret-dir=/usr/local/e2e-aws-csi-cluster-profile
+        - --target=e2e-aws-csi
+        command:
+        - ci-operator
+        image: ci-operator:latest
+        imagePullPolicy: Always
+        name: ""
+        resources:
+          requests:
+            cpu: 10m
+        volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
+        - mountPath: /usr/local/e2e-aws-csi-cluster-profile
+          name: cluster-profile
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
+          readOnly: true
+      serviceAccountName: ci-operator
+      volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
+      - name: cluster-profile
+        projected:
+          sources:
+          - secret:
+              name: cluster-secrets-aws
+      - name: pull-secret
+        secret:
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )e2e-aws-csi,?($|\s.*)
+  - agent: kubernetes
+    always_run: true
+    branches:
+    - release-4.4
+    cluster: build01
     context: ci/prow/images
     decorate: true
     decoration_config:
@@ -17,23 +85,13 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-4.4
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=csi-external-provisioner
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --report-credentials-file=/etc/report/credentials
         - --target=[images]
         - --target=[release:latest]
         command:
         - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-csi-external-provisioner-release-4.4.yaml
-              name: ci-operator-4.4-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -41,19 +99,29 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )images,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - release-4.4
+    cluster: build01
     context: ci/prow/unit
     decorate: true
     decoration_config:
@@ -67,22 +135,12 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-4.4
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=csi-external-provisioner
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --report-credentials-file=/etc/report/credentials
         - --target=unit
         command:
         - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-csi-external-provisioner-release-4.4.yaml
-              name: ci-operator-4.4-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -90,12 +148,21 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )unit,?($|\s.*)

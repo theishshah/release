@@ -1,6 +1,6 @@
 base_images:
   original_jenkins:
-    name: "4.3"
+    name: "4.8"
     namespace: ocp
     tag: jenkins
 build_root:
@@ -20,20 +20,22 @@ images:
 promotion:
   excluded_images:
   - jenkins
-  name: "4.3"
+  name: "4.8"
   namespace: ocp
 resources:
   '*':
-    limits:
-      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
 tag_specification:
-  name: "4.3"
+  name: "4.8"
   namespace: ocp
 tests:
 - as: e2e-aws-jenkins
-  commands: TEST_SUITE=openshift/jenkins-e2e run-tests
-  openshift_installer:
+  steps:
     cluster_profile: aws
+    workflow: openshift-e2e-aws-jenkins
+zz_generated_metadata:
+  branch: master
+  org: openshift
+  repo: jenkins-sync-plugin

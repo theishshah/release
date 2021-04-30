@@ -1,0 +1,93 @@
+kind: List
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    namespace: ci
+    name: needs-rebase
+  spec:
+    selector:
+      app: prow
+      component: needs-rebase
+    ports:
+    - port: 80
+      targetPort: 8888
+    type: ClusterIP
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    namespace: ci
+    name: needs-rebase
+    labels:
+      app: prow
+      component: needs-rebase
+  spec:
+    replicas: 1
+    revisionHistoryLimit: 2
+    selector:
+      matchLabels:
+        app: prow
+        component: needs-rebase
+    template:
+      metadata:
+        labels:
+          app: prow
+          component: needs-rebase
+      spec:
+        containers:
+        - name: needs-rebase
+          image: gcr.io/k8s-prow/needs-rebase:v20210429-37bf34fe13
+          args:
+          - --github-app-id=$(GITHUB_APP_ID)
+          - --github-app-private-key-path=/etc/github/cert
+          - --hmac-secret-file=/etc/webhook/hmac
+          - --plugin-config=/etc/plugins/plugins.yaml
+          - --dry-run=false
+          - --github-endpoint=http://ghproxy
+          - --github-endpoint=https://api.github.com
+          - --github-graphql-endpoint=http://ghproxy/graphql
+          - --hourly-tokens=1000
+          env:
+          - name: GITHUB_APP_ID
+            valueFrom:
+              secretKeyRef:
+                name: openshift-prow-github-app
+                key: appid
+          ports:
+            - name: http
+              containerPort: 8888
+          volumeMounts:
+          - name: hmac
+            mountPath: /etc/webhook
+            readOnly: true
+          - name: github-app-credentials
+            mountPath: /etc/github
+            readOnly: true
+          - name: plugins
+            mountPath: /etc/plugins
+            readOnly: true
+          resources:
+            requests:
+              memory: "75Mi"
+              cpu: "30m"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 20
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz/ready
+              port: 8081
+        volumes:
+        - name: hmac
+          secret:
+            secretName: github-webhook-credentials
+        - name: github-app-credentials
+          secret:
+            secretName: openshift-prow-github-app
+        - name: plugins
+          configMap:
+            name: plugins

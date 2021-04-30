@@ -8,21 +8,19 @@ build_root:
   image_stream_tag:
     name: release
     namespace: openshift
-    tag: golang-1.12
+    tag: golang-1.13
 promotion:
   name: "4.4"
   namespace: ocp
 resources:
   '*':
-    limits:
-      memory: 12Gi
     requests:
       cpu: "3"
       memory: 8Gi
 tag_specification:
   name: "4.4"
   namespace: ocp
-test_binary_build_commands: make build GOFLAGS='-race' --warn-undefined-variables
+test_binary_build_commands: make build GO_BUILD_FLAGS:='-race' --warn-undefined-variables
 tests:
 - as: verify
   commands: |
@@ -31,27 +29,28 @@ tests:
     from: bin
 - as: verify-deps
   commands: |
-    HOME=$( mktemp -d )
     make verify-deps -k --warn-undefined-variables
   container:
-    from: src
-- as: verify-alpha-build-machinery
+    from: bin
+- as: unit
   commands: |
-    HOME=$( mktemp -d )
-    make -C alpha-build-machinery/ verify -k --warn-undefined-variables
-  container:
-    from: src
-- artifact_dir: /tmp/artifacts
-  as: unit
-  commands: |
-    mkdir -p /tmp/artifacts
-    make test-unit JUNITFILE=/tmp/artifacts/unit_report.xml --warn-undefined-variables
+    make test-unit JUNITFILE=${ARTIFACT_DIR}/junit_report.xml --warn-undefined-variables
   container:
     from: test-bin
-- artifact_dir: /tmp/artifacts
-  as: e2e-aws-encryption
-  commands: |
-    mkdir -p /tmp/artifacts
-    make test-e2e-encryption JUNITFILE=/tmp/artifacts/unit_report.xml --warn-undefined-variables
-  openshift_installer_src:
+- as: e2e-aws-encryption
+  steps:
     cluster_profile: aws
+    test:
+    - as: test
+      cli: latest
+      commands: |
+        make test-e2e-encryption JUNITFILE=${ARTIFACT_DIR}/junit_report.xml --warn-undefined-variables
+      from: src
+      resources:
+        requests:
+          cpu: 100m
+    workflow: ipi-aws
+zz_generated_metadata:
+  branch: release-4.4
+  org: openshift
+  repo: library-go

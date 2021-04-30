@@ -2,7 +2,15 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
-- childsb
+- bertinatto
+- gnufied
+- huffmanca
 - jsafrane
-- wongma7
+- tsmetana
 options: {}
+reviewers:
+- bertinatto
+- gnufied
+- huffmanca
+- jsafrane
+- tsmetana

@@ -1,0 +1,3014 @@
+cluster_groups:
+  build_farm:
+  - api.ci
+  - app.ci
+  - arm01
+  - build01
+  - build02
+  - vsphere
+  non_app_ci:
+  - api.ci
+  - arm01
+  - build01
+  - build02
+  - vsphere
+secret_configs:
+- from:
+    ops-mirror.pem:
+      attachment: cert-key.pem
+      bw_item: mirror.openshift.com
+    rh-cdn.pem:
+      attachment: rh-cdn.pem
+      bw_item: rh-cdn
+  to:
+  - cluster_groups:
+    - build_farm
+    name: mirror.openshift.com
+    namespace: ocp
+- from:
+    authorized_keys:
+      attachment: authorized_keys
+      bw_item: sshd-bastion-slack-bot-alpha
+  to:
+  - cluster: app.ci
+    name: sshd-slack-bot-alpha-authorized-keys
+    namespace: ci
+- from:
+    ssh_host_dsa_key:
+      attachment: ssh_host_dsa_key
+      bw_item: sshd-bastion-slack-bot-alpha
+    ssh_host_ecdsa_key:
+      attachment: ssh_host_ecdsa_key
+      bw_item: sshd-bastion-slack-bot-alpha
+    ssh_host_ed25519_key:
+      attachment: ssh_host_ed25519_key
+      bw_item: sshd-bastion-slack-bot-alpha
+    ssh_host_rsa_key:
+      attachment: ssh_host_rsa_key
+      bw_item: sshd-bastion-slack-bot-alpha
+  to:
+  - cluster: app.ci
+    name: sshd-slack-bot-alpha-host-keys
+    namespace: ci
+- from:
+    authorized_keys:
+      attachment: authorized_keys
+      bw_item: sshd-bastion-z
+  to:
+  - cluster: build01
+    name: sshd-authorized-keys
+    namespace: bastion-z
+- from:
+    ssh_host_dsa_key:
+      attachment: ssh_host_dsa_key
+      bw_item: sshd-bastion-z
+    ssh_host_ecdsa_key:
+      attachment: ssh_host_ecdsa_key
+      bw_item: sshd-bastion-z
+    ssh_host_ed25519_key:
+      attachment: ssh_host_ed25519_key
+      bw_item: sshd-bastion-z
+    ssh_host_rsa_key:
+      attachment: ssh_host_rsa_key
+      bw_item: sshd-bastion-z
+  to:
+  - cluster: build01
+    name: sshd-host-keys
+    namespace: bastion-z
+- from:
+    authorized_keys:
+      attachment: authorized_keys
+      bw_item: sshd-bastion-ppc64le
+  to:
+  - cluster: build01
+    name: sshd-authorized-keys
+    namespace: bastion-ppc64le
+- from:
+    ssh_host_dsa_key:
+      attachment: ssh_host_dsa_key
+      bw_item: sshd-bastion-ppc64le
+    ssh_host_ecdsa_key:
+      attachment: ssh_host_ecdsa_key
+      bw_item: sshd-bastion-ppc64le
+    ssh_host_ed25519_key:
+      attachment: ssh_host_ed25519_key
+      bw_item: sshd-bastion-ppc64le
+    ssh_host_rsa_key:
+      attachment: ssh_host_rsa_key
+      bw_item: sshd-bastion-ppc64le
+  to:
+  - cluster: build01
+    name: sshd-host-keys
+    namespace: bastion-ppc64le
+- from:
+    authorized_keys:
+      attachment: authorized_keys
+      bw_item: sshd-bastion-ppc64le-libvirt
+  to:
+  - cluster: build01
+    name: sshd-authorized-keys
+    namespace: bastion-ppc64le-libvirt
+- from:
+    ssh_host_dsa_key:
+      attachment: ssh_host_dsa_key
+      bw_item: sshd-bastion-ppc64le-libvirt
+    ssh_host_ecdsa_key:
+      attachment: ssh_host_ecdsa_key
+      bw_item: sshd-bastion-ppc64le-libvirt
+    ssh_host_ed25519_key:
+      attachment: ssh_host_ed25519_key
+      bw_item: sshd-bastion-ppc64le-libvirt
+    ssh_host_rsa_key:
+      attachment: ssh_host_rsa_key
+      bw_item: sshd-bastion-ppc64le-libvirt
+  to:
+  - cluster: build01
+    name: sshd-host-keys
+    namespace: bastion-ppc64le-libvirt
+- from:
+    authorized_keys:
+      attachment: authorized_keys
+      bw_item: sshd-bastion-telco
+  to:
+  - cluster: build01
+    name: sshd-authorized-keys
+    namespace: bastion-telco
+- from:
+    ssh_host_dsa_key:
+      attachment: ssh_host_dsa_key
+      bw_item: sshd-bastion-telco
+    ssh_host_ecdsa_key:
+      attachment: ssh_host_ecdsa_key
+      bw_item: sshd-bastion-telco
+    ssh_host_ed25519_key:
+      attachment: ssh_host_ed25519_key
+      bw_item: sshd-bastion-telco
+    ssh_host_rsa_key:
+      attachment: ssh_host_rsa_key
+      bw_item: sshd-bastion-telco
+  to:
+  - cluster: build01
+    name: sshd-host-keys
+    namespace: bastion-telco
+- from:
+    api:
+      bw_item: openshift-bugzilla-robot
+      field: api-key
+  to:
+  - cluster_groups:
+    - build_farm
+    name: bugzilla-credentials-openshift-bugzilla-robot
+    namespace: ci
+- from:
+    password:
+      attribute: password
+      bw_item: ci.openshift.redhat.com
+  to:
+  - cluster: api.ci
+    name: jenkins-credentials-ci.openshift.redhat.com
+    namespace: ci
+  - cluster: app.ci
+    name: jenkins-credentials-ci.openshift.redhat.com
+    namespace: ci
+- from:
+    password:
+      attribute: password
+      bw_item: kata-jenkins-ci.westus2.cloudapp.azure.com
+  to:
+  - cluster: api.ci
+    name: jenkins-credentials-kata-jenkins-ci.westus2.cloudapp.azure.com
+    namespace: ci
+  - cluster: app.ci
+    name: jenkins-credentials-kata-jenkins-ci.westus2.cloudapp.azure.com
+    namespace: ci
+- from:
+    oauth:
+      bw_item: openshift-bot
+      field: github-oauth-token
+  to:
+  - cluster: api.ci
+    name: github-credentials-openshift-bot
+    namespace: ci
+  - cluster: app.ci
+    name: github-credentials-openshift-bot
+    namespace: ci
+- from:
+    oauth:
+      bw_item: openshift-build-robot
+      field: github-oauth-token
+  to:
+  - cluster: api.ci
+    name: github-credentials-openshift-build-robot
+    namespace: ci
+- from:
+    oauth:
+      bw_item: openshift-cherrypick-robot
+      field: github-oauth-token
+  to:
+  - cluster: api.ci
+    name: github-credentials-openshift-cherrypick-robot
+    namespace: ci
+  - cluster: app.ci
+    name: github-credentials-openshift-cherrypick-robot
+    namespace: ci
+- from:
+    oauth:
+      bw_item: openshift-ci-robot
+      field: github-oauth-token
+  to:
+  - cluster: api.ci
+    name: github-credentials-openshift-ci-robot
+    namespace: ci
+  - cluster: app.ci
+    name: github-credentials-openshift-ci-robot
+    namespace: ci
+- from:
+    oauth:
+      bw_item: openshift-merge-robot
+      field: github-oauth-token
+  to:
+  - cluster: api.ci
+    name: github-credentials-openshift-merge-robot
+    namespace: ci
+  - cluster: app.ci
+    name: github-credentials-openshift-merge-robot
+    namespace: ci
+- from:
+    oauth:
+      bw_item: openshift-publish-robot
+      field: github-oauth-token
+  to:
+  - cluster: api.ci
+    name: github-credentials-openshift-publish-robot
+    namespace: ci
+- from:
+    oauth:
+      bw_item: openshift-ci-robot
+      field: private-git-cloner
+  to:
+  - cluster_groups:
+    - build_farm
+    name: github-credentials-openshift-ci-robot-private-git-cloner
+    namespace: ci
+- from:
+    oauth:
+      bw_item: openshift-publish-robot
+      field: private-git-cloner
+  to:
+  - cluster: api.ci
+    name: private-git-cloner
+    namespace: ci
+- from:
+    oauth:
+      bw_item: slack-credentials-prow
+      field: oauth-token
+  to:
+  - cluster: api.ci
+    name: slack-credentials-prow
+    namespace: ci
+  - cluster: app.ci
+    name: slack-credentials-prow
+    namespace: ci
+- from:
+    token:
+      bw_item: ci-chat-bot-slack-token
+      field: Token
+  to:
+  - cluster: app.ci
+    name: ci-chat-bot-slack-token
+    namespace: ci
+- from:
+    url:
+      bw_item: ci-slack-api-url
+      field: url
+  to:
+  - cluster: api.ci
+    name: ci-slack-api-url
+    namespace: ci
+  - cluster: app.ci
+    name: ci-slack-api-url
+    namespace: ci
+- from:
+    config.json:
+      bw_item: prow.svc.ci.openshift.org
+      field: client-configuration
+  to:
+  - cluster: api.ci
+    name: github-app-credentials
+    namespace: ci
+  - cluster: app.ci
+    name: github-app-credentials
+    namespace: ci
+- from:
+    config.json:
+      bw_item: deck-internal-ci.svc.ci.openshift.org
+      field: client-configuration
+  to:
+  - cluster: api.ci
+    name: github-app-credentials-private
+    namespace: ci
+  - cluster: app.ci
+    name: github-app-credentials-private
+    namespace: ci
+- from:
+    cookie:
+      bw_item: prow.svc.ci.openshift.org
+      field: cookie32
+  to:
+  - cluster: api.ci
+    name: cookie
+    namespace: ci
+  - cluster: app.ci
+    name: cookie
+    namespace: ci
+- from:
+    hmac:
+      bw_item: hmac
+      field: hmac-token
+  to:
+  - cluster: api.ci
+    name: github-webhook-credentials
+    namespace: ci
+  - cluster: app.ci
+    name: github-webhook-credentials
+    namespace: ci
+- from:
+    WebHookSecretKey:
+      bw_item: github-deploymentconfig-webhook-token
+      field: Token
+  to:
+  - cluster: api.ci
+    name: github-deploymentconfig-trigger
+    namespace: ci
+- from:
+    api-key:
+      bw_item: unsplash.com
+      field: api-key
+  to:
+  - cluster: api.ci
+    name: unsplash-api-key
+    namespace: ci
+  - cluster: app.ci
+    name: unsplash-api-key
+    namespace: ci
+- from:
+    service-account.json:
+      attachment: credentials.json
+      bw_item: aos-pubsub-subscriber
+  to:
+  - cluster: api.ci
+    name: gce-sa-credentials-aos-pubsub-subscriber
+    namespace: ci
+- from:
+    service-account.json:
+      attachment: credentials.json
+      bw_item: ci-vm-operator
+  to:
+  - cluster: api.ci
+    name: gce-sa-credentials-ci-vm-operator
+    namespace: ci
+- from:
+    service-account.json:
+      attachment: credentials.json
+      bw_item: gcs-publisher
+  to:
+  - cluster_groups:
+    - build_farm
+    name: gce-sa-credentials-gcs-publisher
+    namespace: ci
+  - cluster_groups:
+    - build_farm
+    name: gce-sa-credentials-gcs-publisher
+    namespace: test-credentials
+- from:
+    service-account.json:
+      attachment: credentials.json
+      bw_item: gcs-tide-publisher
+  to:
+  - cluster: app.ci
+    name: gce-sa-credentials-gcs-tide-publisher
+    namespace: ci
+- from:
+    service-account.json:
+      attachment: credentials.json
+      bw_item: resource-usage-data-publisher
+  to:
+  - cluster_groups:
+    - build_farm
+    name: gce-sa-credentials-resource-usage-data-publisher
+    namespace: ci
+- from:
+    service-account.json:
+      attachment: credentials.json
+      bw_item: gcs-private
+  to:
+  - cluster_groups:
+    - build_farm
+    name: gce-sa-credentials-gcs-private
+    namespace: ci
+- from:
+    service-account.json:
+      attachment: credentials.json
+      bw_item: gcs-crier-publisher
+  to:
+  - cluster: api.ci
+    name: gce-sa-credentials-gcs-crier-publisher
+    namespace: ci
+  - cluster: app.ci
+    name: gce-sa-credentials-gcs-crier-publisher
+    namespace: ci
+- from:
+    service-account.json:
+      attachment: credentials.json
+      bw_item: aos-serviceaccount
+    ssh-privatekey:
+      attachment: ssh-privatekey
+      bw_item: aos-serviceaccount
+    ssh-publickey:
+      attachment: ssh-publickey
+      bw_item: aos-serviceaccount
+  to:
+  - cluster: api.ci
+    name: gce-sa-credentials-aos-serviceaccount
+    namespace: ci
+- from:
+    service-account.json:
+      attachment: credentials.json
+      bw_item: jenkins-ci-provisioner
+    ssh-privatekey:
+      attachment: ssh-privatekey
+      bw_item: jenkins-ci-provisioner
+    ssh-publickey:
+      attachment: ssh-publickey
+      bw_item: jenkins-ci-provisioner
+  to:
+  - cluster: api.ci
+    name: gce-sa-credentials-jenkins-ci-provisioner
+    namespace: ci
+- from:
+    config.json:
+      bw_item: docker.io
+      field: push-credentials
+  to:
+  - cluster: api.ci
+    name: registry-push-credentials-docker.io
+    namespace: ci
+- from:
+    config.json:
+      bw_item: quay.io
+      field: push-credentials
+  to:
+  - cluster: app.ci
+    name: registry-push-credentials-quay.io
+    namespace: ci
+- from:
+    config.json:
+      bw_item: quay.io/openshift-knative
+      field: push-credentials
+  to:
+  - cluster: app.ci
+    name: registry-push-credentials-quay.io-openshift-knative
+    namespace: ci
+- from:
+    config.json:
+      bw_item: quay.io/openshift-kni
+      field: push-credentials
+  to:
+  - cluster: app.ci
+    name: registry-push-credentials-quay.io-openshift-kni
+    namespace: ci
+- from:
+    config.json:
+      bw_item: quay.io/openshiftio
+      field: push-credentials
+  to:
+  - cluster: app.ci
+    name: registry-push-credentials-quay.io-openshiftio
+    namespace: ci
+- from:
+    config.json:
+      bw_item: quay.io/openshift-pipeline
+      field: push-credentials
+  to:
+  - cluster: app.ci
+    name: registry-push-credentials-quay.io-openshift-pipeline
+    namespace: ci
+- from:
+    config.json:
+      bw_item: quay.io/codeready-toolchain
+      field: push-credentials
+  to:
+  - cluster: app.ci
+    name: registry-push-credentials-quay.io-codeready-toolchain
+    namespace: ci
+- from:
+    config.json:
+      bw_item: quay.io/operator-manifests
+      field: push-credentials
+  to:
+  - cluster: api.ci
+    name: registry-push-credentials-quay.io-operator-manifests
+    namespace: ci
+- from:
+    config.json:
+      bw_item: quay.io/integr8ly
+      field: push-credentials
+  to:
+  - cluster: app.ci
+    name: registry-push-credentials-quay.io-integr8ly
+    namespace: ci
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: push-token
+        bw_item: quay.io/openshift-psap
+        registry_url: quay.io
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+  to:
+  - cluster: app.ci
+    name: registry-push-credentials-quay.io-openshift-psap
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+- from:
+    config.json:
+      attachment: config.json
+      bw_item: quay.io/ovirt
+  to:
+  - cluster: app.ci
+    name: registry-push-credentials-quay.io-ovirt
+    namespace: ci
+- from:
+    config.json:
+      bw_item: quay.io/redhat-developer
+      field: push-credentials
+  to:
+  - cluster: app.ci
+    name: registry-push-credentials-quay.io-redhat-developer
+    namespace: ci
+- from:
+    config.json:
+      attachment: docker.cfg
+      bw_item: quay.io/open-cluster-management
+  to:
+  - cluster: app.ci
+    name: registry-push-credentials-quay.io-open-cluster-management
+    namespace: ci
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: push-token
+        bw_item: quay.io/openshift-ocs-dev
+        registry_url: quay.io
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+  to:
+  - cluster: app.ci
+    name: registry-push-credentials-quay.io-ocs-dev
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: push-token
+        bw_item: quay.io/tnozicka
+        registry_url: quay.io
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+  to:
+  - cluster: app.ci
+    name: registry-push-credentials-quay.io-tnozicka
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: push-token
+        bw_item: quay.io/openshift-azure
+        registry_url: quay.io
+  to:
+  - cluster: app.ci
+    name: registry-push-credentials-quay.io-openshift-azure
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+- from:
+    config.json:
+      bw_item: quay.io
+      field: pull-credentials
+  to:
+  - cluster: api.ci
+    name: registry-pull-credentials-quay.io
+    namespace: ci
+  - cluster: api.ci
+    name: files-pull-secret
+    namespace: ci-release
+  - cluster: api.ci
+    name: files-pull-secret
+    namespace: ci-release-priv
+  - cluster: api.ci
+    name: files-pull-secret
+    namespace: ci-release-ppc64le
+  - cluster: api.ci
+    name: files-pull-secret
+    namespace: ci-release-ppc64le-priv
+  - cluster: api.ci
+    name: files-pull-secret
+    namespace: ci-release-s390x
+  - cluster: api.ci
+    name: files-pull-secret
+    namespace: ci-release-s390x-priv
+  - cluster: app.ci
+    name: files-pull-secret
+    namespace: ci-release
+  - cluster: app.ci
+    name: files-pull-secret
+    namespace: ci-release-priv
+  - cluster: app.ci
+    name: files-pull-secret
+    namespace: ci-release-ppc64le
+  - cluster: app.ci
+    name: files-pull-secret
+    namespace: ci-release-ppc64le-priv
+  - cluster: app.ci
+    name: files-pull-secret
+    namespace: ci-release-s390x
+  - cluster: app.ci
+    name: files-pull-secret
+    namespace: ci-release-s390x-priv
+  - cluster: api.ci
+    name: source
+    namespace: ci-release
+  - cluster: api.ci
+    name: source
+    namespace: ci-release-priv
+  - cluster: api.ci
+    name: source
+    namespace: ci-release-ppc64le
+  - cluster: api.ci
+    name: source
+    namespace: ci-release-ppc64le-priv
+  - cluster: api.ci
+    name: source
+    namespace: ci-release-s390x
+  - cluster: api.ci
+    name: source
+    namespace: ci-release-s390x-priv
+  - cluster: app.ci
+    name: source
+    namespace: ci-release
+  - cluster: app.ci
+    name: source
+    namespace: ci-release-priv
+  - cluster: app.ci
+    name: source
+    namespace: ci-release-ppc64le
+  - cluster: app.ci
+    name: source
+    namespace: ci-release-ppc64le-priv
+  - cluster: app.ci
+    name: source
+    namespace: ci-release-s390x
+  - cluster: app.ci
+    name: source
+    namespace: ci-release-s390x-priv
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: token_image-puller_ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: ci-pull-credentials
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+  - cluster_groups:
+    - build_farm
+    name: ci-pull-credentials
+    namespace: test-credentials
+    type: kubernetes.io/dockerconfigjson
+  - cluster: app.ci
+    name: ci-pull-credentials
+    namespace: ci-release
+    type: kubernetes.io/dockerconfigjson
+  - cluster: app.ci
+    name: ci-pull-credentials
+    namespace: ci-release-priv
+    type: kubernetes.io/dockerconfigjson
+  - cluster: app.ci
+    name: ci-pull-credentials
+    namespace: ci-release-ppc64le
+    type: kubernetes.io/dockerconfigjson
+  - cluster: app.ci
+    name: ci-pull-credentials
+    namespace: ci-release-ppc64le-priv
+    type: kubernetes.io/dockerconfigjson
+  - cluster: app.ci
+    name: ci-pull-credentials
+    namespace: ci-release-s390x
+    type: kubernetes.io/dockerconfigjson
+  - cluster: app.ci
+    name: ci-pull-credentials
+    namespace: ci-release-s390x-priv
+    type: kubernetes.io/dockerconfigjson
+- from:
+    quay-env.txt:
+      attachment: quay-env.txt
+      bw_item: operator-manifests
+    test.env.yaml:
+      attachment: test.env.yaml
+      bw_item: operator-manifests
+  to:
+  - cluster: api.ci
+    name: operator-manifests-test-credentials
+    namespace: ci
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: auth
+        bw_item: api.ci-pull-secret
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+      - auth_bw_attachment: auth
+        bw_item: quay.io/multi-arch
+        registry_url: quay.io/multi-arch
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: pull-secret
+    namespace: openshift-config
+    type: kubernetes.io/dockerconfigjson
+- from:
+    .awscred:
+      attachment: .awscred
+      bw_item: cluster-bot-osd-ephemeral
+    aws-account-id:
+      attachment: aws-account-id
+      bw_item: cluster-bot-osd-ephemeral
+    pull-secret:
+      dockerconfigJSON:
+      - auth_bw_attachment: auth
+        bw_item: api.ci-pull-secret
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+    sso-client-id:
+      attachment: ocm-developer-productivity-staging.user
+      bw_item: cluster-bot-osd-ephemeral
+    sso-client-secret:
+      attachment: ocm-developer-productivity-staging.token
+      bw_item: cluster-bot-osd-ephemeral
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: cluster-secrets-osd-ephemeral
+    namespace: ci
+- from:
+    .awscred:
+      attachment: .awscred
+      bw_item: jenkins-ci-iam
+    insights-live.yaml:
+      attachment: insights-live.yaml
+      bw_item: insights-ci-account
+    ops-mirror.pem:
+      attachment: cert-key.pem
+      bw_item: mirror.openshift.com
+    pull-secret:
+      dockerconfigJSON:
+      - auth_bw_attachment: auth
+        bw_item: api.ci-pull-secret
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+    ssh-privatekey:
+      attachment: ssh-privatekey
+      bw_item: jenkins-ci-iam
+    ssh-publickey:
+      attachment: ssh-publickey
+      bw_item: jenkins-ci-iam
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: cluster-secrets-aws
+    namespace: ci
+- from:
+    .awscred:
+      attachment: .awscred
+      bw_item: cpaas-aws-credentials
+    insights-live.yaml:
+      attachment: insights-live.yaml
+      bw_item: insights-ci-account
+    ops-mirror.pem:
+      attachment: cert-key.pem
+      bw_item: mirror.openshift.com
+    pull-secret:
+      dockerconfigJSON:
+      - auth_bw_attachment: auth
+        bw_item: api.ci-pull-secret
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+    ssh-privatekey:
+      attachment: ssh-privatekey
+      bw_item: cpaas-aws-credentials
+    ssh-publickey:
+      attachment: ssh-publickey
+      bw_item: cpaas-aws-credentials
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: cluster-secrets-aws-cpaas
+    namespace: ci
+- from:
+    gce.json:
+      attachment: credentials.json
+      bw_item: jenkins-ci-provisioner
+    insights-live.yaml:
+      attachment: insights-live.yaml
+      bw_item: insights-ci-account
+    ops-mirror.pem:
+      attachment: cert-key.pem
+      bw_item: mirror.openshift.com
+    pull-secret:
+      dockerconfigJSON:
+      - auth_bw_attachment: auth
+        bw_item: api.ci-pull-secret
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+    ssh-privatekey:
+      attachment: ssh-privatekey
+      bw_item: jenkins-ci-provisioner
+    ssh-publickey:
+      attachment: ssh-publickey
+      bw_item: jenkins-ci-provisioner
+    telemeter-token:
+      bw_item: telemeter
+      field: telemeter-token
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: cluster-secrets-gcp
+    namespace: ci
+- from:
+    gce.json:
+      attachment: credentials.json
+      bw_item: gcp-openshift-gce-devel-ci-2
+    insights-live.yaml:
+      attachment: insights-live.yaml
+      bw_item: insights-ci-account
+    ops-mirror.pem:
+      attachment: cert-key.pem
+      bw_item: mirror.openshift.com
+    pull-secret:
+      dockerconfigJSON:
+      - auth_bw_attachment: auth
+        bw_item: api.ci-pull-secret
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+    ssh-privatekey:
+      attachment: ssh-privatekey
+      bw_item: gcp-openshift-gce-devel-ci-2
+    ssh-publickey:
+      attachment: ssh-publickey
+      bw_item: gcp-openshift-gce-devel-ci-2
+    telemeter-token:
+      bw_item: telemeter
+      field: telemeter-token
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: cluster-secrets-gcp-openshift-gce-devel-ci-2
+    namespace: ci
+- from:
+    .awscred:
+      attachment: .awscred
+      bw_item: openstack
+    clouds.yaml:
+      attachment: clouds.yaml
+      bw_item: openstack
+    insights-live.yaml:
+      attachment: insights-live.yaml
+      bw_item: insights-ci-account
+    pull-secret:
+      dockerconfigJSON:
+      - auth_bw_attachment: auth
+        bw_item: api.ci-pull-secret
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+    ssh-privatekey:
+      attachment: ssh-privatekey
+      bw_item: jenkins-ci-provisioner
+    ssh-publickey:
+      attachment: ssh-publickey
+      bw_item: jenkins-ci-provisioner
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: cluster-secrets-openstack
+    namespace: ci
+- from:
+    .awscred:
+      attachment: .awscred
+      bw_item: openstack
+    insights-live.yaml:
+      attachment: insights-live.yaml
+      bw_item: insights-ci-account
+    pull-secret:
+      dockerconfigJSON:
+      - auth_bw_attachment: auth
+        bw_item: api.ci-pull-secret
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+    ssh-privatekey:
+      attachment: ssh-privatekey
+      bw_item: jenkins-ci-provisioner
+    ssh-publickey:
+      attachment: ssh-publickey
+      bw_item: jenkins-ci-provisioner
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: cluster-secrets-openstack-vexxhost
+    namespace: ci
+- from:
+    ca-cert.pem:
+      attachment: ca-cert.pem
+      bw_item: openstack-ppc64le
+    clouds.yaml:
+      attachment: clouds.yaml
+      bw_item: openstack-ppc64le
+    pull-secret:
+      dockerconfigJSON:
+      - auth_bw_attachment: auth
+        bw_item: api.ci-pull-secret
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+    ssh-privatekey:
+      attachment: ssh-privatekey
+      bw_item: openstack-ppc64le
+    ssh-publickey:
+      attachment: ssh-publickey
+      bw_item: openstack-ppc64le
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: cluster-secrets-openstack-ppc64le
+    namespace: ci
+- from:
+    pull-secret:
+      dockerconfigJSON:
+      - auth_bw_attachment: auth
+        bw_item: api.ci-pull-secret
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+    ssh-privatekey:
+      attachment: ssh-privatekey
+      bw_item: jenkins-ci-provisioner
+    ssh-publickey:
+      attachment: ssh-publickey
+      bw_item: jenkins-ci-provisioner
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: cluster-secrets-openstack-osuosl
+    namespace: ci
+- from:
+    insights-live.yaml:
+      attachment: insights-live.yaml
+      bw_item: insights-ci-account
+    ops-mirror.pem:
+      attachment: cert-key.pem
+      bw_item: mirror.openshift.com
+    pull-secret:
+      dockerconfigJSON:
+      - auth_bw_attachment: auth
+        bw_item: api.ci-pull-secret
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+    ssh-privatekey:
+      attachment: ssh-privatekey
+      bw_item: jenkins-ci-iam
+    ssh-publickey:
+      attachment: ssh-publickey
+      bw_item: jenkins-ci-iam
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: cluster-secrets-kubevirt
+    namespace: ci
+- from:
+    .awscred:
+      attachment: .awscred
+      bw_item: jenkins-ci-iam
+    insights-live.yaml:
+      attachment: insights-live.yaml
+      bw_item: insights-ci-account
+    pull-secret:
+      dockerconfigJSON:
+      - auth_bw_attachment: auth
+        bw_item: api.ci-pull-secret
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+    ssh-privatekey:
+      attachment: ssh-privatekey
+      bw_item: jenkins-ci-iam
+    ssh-publickey:
+      attachment: ssh-publickey
+      bw_item: jenkins-ci-iam
+    vmc.secret.auto.tfvars:
+      attachment: vmc.secret.auto.tfvars
+      bw_item: vsphere-credentials
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: cluster-secrets-vsphere
+    namespace: ci
+- from:
+    .awscred:
+      attachment: .awscred
+      bw_item: jenkins-ci-iam
+    .packetcred:
+      attachment: .packetcred
+      bw_item: packet.net
+    .slackhook:
+      attachment: .slackhook
+      bw_item: packet.net
+    insights-live.yaml:
+      attachment: insights-live.yaml
+      bw_item: insights-ci-account
+    matchbox-client.crt:
+      attachment: client.crt
+      bw_item: packet.net
+    matchbox-client.key:
+      attachment: client.key
+      bw_item: packet.net
+    pull-secret:
+      dockerconfigJSON:
+      - auth_bw_attachment: auth
+        bw_item: api.ci-pull-secret
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+    ssh-privatekey:
+      attachment: ssh-privatekey
+      bw_item: jenkins-ci-iam
+    ssh-publickey:
+      attachment: ssh-publickey
+      bw_item: jenkins-ci-iam
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: cluster-secrets-metal
+    namespace: ci
+- from:
+    insights-live.yaml:
+      attachment: insights-live.yaml
+      bw_item: insights-ci-account
+    ops-mirror.pem:
+      attachment: cert-key.pem
+      bw_item: mirror.openshift.com
+    pull-secret:
+      dockerconfigJSON:
+      - auth_bw_attachment: auth
+        bw_item: api.ci-pull-secret
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+    ssh-privatekey:
+      attachment: ssh-privatekey
+      bw_item: jenkins-ci-iam
+    ssh-publickey:
+      attachment: ssh-publickey
+      bw_item: jenkins-ci-iam
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: cluster-secrets-libvirt-s390x
+    namespace: ci
+- from:
+    insights-live.yaml:
+      attachment: insights-live.yaml
+      bw_item: insights-ci-account
+    ops-mirror.pem:
+      attachment: cert-key.pem
+      bw_item: mirror.openshift.com
+    pull-secret:
+      dockerconfigJSON:
+      - auth_bw_attachment: auth
+        bw_item: api.ci-pull-secret
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+    ssh-privatekey:
+      attachment: ssh-privatekey
+      bw_item: jenkins-ci-iam
+    ssh-publickey:
+      attachment: ssh-publickey
+      bw_item: jenkins-ci-iam
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: cluster-secrets-libvirt-ppc64le
+    namespace: ci
+- from:
+    pull-secret:
+      dockerconfigJSON:
+      - auth_bw_attachment: auth
+        bw_item: api.ci-pull-secret
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: cluster-secrets-packet
+    namespace: ci
+- from:
+    osServicePrincipal.json:
+      attachment: osServicePrincipal.json
+      bw_item: os4-installer.openshift-ci.azure
+    pull-secret:
+      dockerconfigJSON:
+      - auth_bw_attachment: auth
+        bw_item: api.ci-pull-secret
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+    ssh-privatekey:
+      attachment: ssh-privatekey
+      bw_item: jenkins-ci-iam
+    ssh-publickey:
+      attachment: ssh-publickey
+      bw_item: jenkins-ci-iam
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: cluster-secrets-azure4
+    namespace: ci
+- from:
+    token:
+      bw_item: codecov-tokens
+      field: redhat-developer-service-binding-operator
+  to:
+  - cluster: api.ci
+    name: redhat-developer-service-binding-operator-codecov-token
+    namespace: ci
+  - cluster: build01
+    name: redhat-developer-service-binding-operator-codecov-token
+    namespace: ci
+  - cluster: build02
+    name: redhat-developer-service-binding-operator-codecov-token
+    namespace: ci
+- from:
+    app.ci.config:
+      attachment: sa.pod-scaler.app.ci.config
+      bw_item: pod-scaler
+    build01.config:
+      attachment: sa.pod-scaler.build01.config
+      bw_item: pod-scaler
+    build02.config:
+      attachment: sa.pod-scaler.build02.config
+      bw_item: pod-scaler
+  to:
+  - cluster: app.ci
+    name: pod-scaler-credentials
+    namespace: ci
+- from:
+    build01_github_client_id:
+      bw_item: build_farm_01_cluster
+      field: github_client_id
+    build02_github_client_id:
+      bw_item: build_farm_02_cluster
+      field: github_client_id
+    sa.config-updater.api.ci.config:
+      attachment: sa.config-updater.api.ci.config
+      bw_item: build_farm
+    sa.config-updater.app.ci.config:
+      attachment: sa.config-updater.app.ci.config
+      bw_item: build_farm
+    sa.config-updater.arm01.config:
+      attachment: sa.config-updater.arm01.config
+      bw_item: build_farm
+    sa.config-updater.build01.config:
+      attachment: sa.config-updater.build01.config
+      bw_item: build_farm
+    sa.config-updater.build02.config:
+      attachment: sa.config-updater.build02.config
+      bw_item: build_farm
+    sa.config-updater.vsphere.config:
+      attachment: sa.config-updater.vsphere.config
+      bw_item: build_farm
+    sa.crier.api.ci.config:
+      attachment: sa.crier.api.ci.config
+      bw_item: build_farm
+    sa.crier.app.ci.config:
+      attachment: sa.crier.app.ci.config
+      bw_item: build_farm
+    sa.crier.arm01.config:
+      attachment: sa.crier.arm01.config
+      bw_item: build_farm
+    sa.crier.build01.config:
+      attachment: sa.crier.build01.config
+      bw_item: build_farm
+    sa.crier.build02.config:
+      attachment: sa.crier.build02.config
+      bw_item: build_farm
+    sa.crier.vsphere.config:
+      attachment: sa.crier.vsphere.config
+      bw_item: build_farm
+    sa.deck.api.ci.config:
+      attachment: sa.deck.api.ci.config
+      bw_item: build_farm
+    sa.deck.app.ci.config:
+      attachment: sa.deck.app.ci.config
+      bw_item: build_farm
+    sa.deck.arm01.config:
+      attachment: sa.deck.arm01.config
+      bw_item: build_farm
+    sa.deck.build01.config:
+      attachment: sa.deck.build01.config
+      bw_item: build_farm
+    sa.deck.build02.config:
+      attachment: sa.deck.build02.config
+      bw_item: build_farm
+    sa.deck.vsphere.config:
+      attachment: sa.deck.vsphere.config
+      bw_item: build_farm
+    sa.hook.api.ci.config:
+      attachment: sa.hook.api.ci.config
+      bw_item: build_farm
+    sa.hook.app.ci.config:
+      attachment: sa.hook.app.ci.config
+      bw_item: build_farm
+    sa.hook.arm01.config:
+      attachment: sa.hook.arm01.config
+      bw_item: build_farm
+    sa.hook.build01.config:
+      attachment: sa.hook.build01.config
+      bw_item: build_farm
+    sa.hook.build02.config:
+      attachment: sa.hook.build02.config
+      bw_item: build_farm
+    sa.hook.vsphere.config:
+      attachment: sa.hook.vsphere.config
+      bw_item: build_farm
+    sa.jenkins-operator.api.ci.config:
+      attachment: sa.jenkins-operator.api.ci.config
+      bw_item: build_farm
+    sa.prow-controller-manager.api.ci.config:
+      attachment: sa.prow-controller-manager.api.ci.config
+      bw_item: build_farm
+    sa.prow-controller-manager.app.ci.config:
+      attachment: sa.prow-controller-manager.app.ci.config
+      bw_item: build_farm
+    sa.prow-controller-manager.arm01.config:
+      attachment: sa.prow-controller-manager.arm01.config
+      bw_item: build_farm
+    sa.prow-controller-manager.build01.config:
+      attachment: sa.prow-controller-manager.build01.config
+      bw_item: build_farm
+    sa.prow-controller-manager.build02.config:
+      attachment: sa.prow-controller-manager.build02.config
+      bw_item: build_farm
+    sa.prow-controller-manager.vsphere.config:
+      attachment: sa.prow-controller-manager.vsphere.config
+      bw_item: build_farm
+    sa.sinker.api.ci.config:
+      attachment: sa.sinker.api.ci.config
+      bw_item: build_farm
+    sa.sinker.app.ci.config:
+      attachment: sa.sinker.app.ci.config
+      bw_item: build_farm
+    sa.sinker.arm01.config:
+      attachment: sa.sinker.arm01.config
+      bw_item: build_farm
+    sa.sinker.build01.config:
+      attachment: sa.sinker.build01.config
+      bw_item: build_farm
+    sa.sinker.build02.config:
+      attachment: sa.sinker.build02.config
+      bw_item: build_farm
+    sa.sinker.vsphere.config:
+      attachment: sa.sinker.vsphere.config
+      bw_item: build_farm
+    vsphere_github_client_id:
+      bw_item: build_farm_vsphere_cluster
+      field: github_client_id
+  to:
+  - cluster: api.ci
+    name: build-farm-credentials
+    namespace: ci
+  - cluster: app.ci
+    name: build-farm-credentials
+    namespace: ci
+- from:
+    kubeconfig:
+      attachment: sa.ci-operator.api.ci.config
+      bw_item: build_farm
+  to:
+  - cluster: api.ci
+    name: ci-operator
+    namespace: test-credentials
+- from:
+    kubeconfig:
+      attachment: sa.ci-operator.arm01.config
+      bw_item: build_farm
+  to:
+  - cluster: arm01
+    name: ci-operator
+    namespace: test-credentials
+- from:
+    kubeconfig:
+      attachment: sa.ci-operator.build01.config
+      bw_item: build_farm
+  to:
+  - cluster: build01
+    name: ci-operator
+    namespace: test-credentials
+- from:
+    kubeconfig:
+      attachment: sa.ci-operator.build02.config
+      bw_item: build_farm
+  to:
+  - cluster: build02
+    name: ci-operator
+    namespace: test-credentials
+- from:
+    sa.ci-operator.app.ci.config:
+      attachment: sa.ci-operator.app.ci.config
+      bw_item: build_farm
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: app.ci-ci-operator-credentials
+    namespace: ci
+- from:
+    kubeconfig:
+      attachment: sa.hive.app.ci.config
+      bw_item: build_farm
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: app.ci-hive-credentials
+    namespace: ci
+  - cluster_groups:
+    - non_app_ci
+    name: app.ci-hive-credentials
+    namespace: test-credentials
+- from:
+    ci.htpasswd:
+      attachment: ci.htpasswd
+      bw_item: boskos-oauth-proxy
+    credentials:
+      bw_item: boskos-oauth-proxy
+      field: boskos-credentials
+  to:
+  - cluster_groups:
+    - build_farm
+    name: boskos-credentials
+    namespace: ci
+- from:
+    AWS_ACCESS_KEY_ID:
+      bw_item: aws_ci_infra_ci-build01-audit-logs-uploader
+      field: AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY:
+      bw_item: aws_ci_infra_ci-build01-audit-logs-uploader
+      field: AWS_SECRET_ACCESS_KEY
+  to:
+  - cluster: build01
+    name: aws-ci-infra-ci-build01-audit-logs-uploader-credentials
+    namespace: api-audit-log
+- from:
+    AWS_ACCESS_KEY_ID:
+      bw_item: aws_ci_infra_ci-build02-audit-logs-uploader
+      field: AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY:
+      bw_item: aws_ci_infra_ci-build02-audit-logs-uploader
+      field: AWS_SECRET_ACCESS_KEY
+  to:
+  - cluster: build02
+    name: aws-ci-infra-ci-build02-audit-logs-uploader-credentials
+    namespace: api-audit-log
+- from:
+    .awscred:
+      attachment: .awscred
+      bw_item: AWS ci-longlivedcluster-bot
+  to:
+  - cluster_groups:
+    - build_farm
+    name: aws-openshift-llc-account-credentials
+    namespace: ci
+- from:
+    .git-credentials:
+      bw_item: openshift-bot
+      field: git_url_with_credentials
+  to:
+  - cluster: api.ci
+    name: git-credentials
+    namespace: ci-release
+  - cluster: api.ci
+    name: git-credentials
+    namespace: ci-release-priv
+  - cluster: api.ci
+    name: git-credentials
+    namespace: ci-release-ppc64le
+  - cluster: api.ci
+    name: git-credentials
+    namespace: ci-release-ppc64le-priv
+  - cluster: api.ci
+    name: git-credentials
+    namespace: ci-release-s390x
+  - cluster: api.ci
+    name: git-credentials
+    namespace: ci-release-s390x-priv
+  - cluster: app.ci
+    name: git-credentials
+    namespace: ci-release
+  - cluster: app.ci
+    name: git-credentials
+    namespace: ci-release-priv
+  - cluster: app.ci
+    name: git-credentials
+    namespace: ci-release-ppc64le
+  - cluster: app.ci
+    name: git-credentials
+    namespace: ci-release-ppc64le-priv
+  - cluster: app.ci
+    name: git-credentials
+    namespace: ci-release-s390x
+  - cluster: app.ci
+    name: git-credentials
+    namespace: ci-release-s390x-priv
+- from:
+    sa.release-controller-ocp-ppc64le-priv.api.ci.config:
+      attachment: sa.release-controller-ocp-ppc64le-priv.api.ci.config
+      bw_item: release-controller
+    sa.release-controller-ocp-ppc64le-priv.app.ci.config:
+      attachment: sa.release-controller-ocp-ppc64le-priv.app.ci.config
+      bw_item: release-controller
+    sa.release-controller-ocp-ppc64le.api.ci.config:
+      attachment: sa.release-controller-ocp-ppc64le.api.ci.config
+      bw_item: release-controller
+    sa.release-controller-ocp-ppc64le.app.ci.config:
+      attachment: sa.release-controller-ocp-ppc64le.app.ci.config
+      bw_item: release-controller
+    sa.release-controller-ocp-priv.api.ci.config:
+      attachment: sa.release-controller-ocp-priv.api.ci.config
+      bw_item: release-controller
+    sa.release-controller-ocp-priv.app.ci.config:
+      attachment: sa.release-controller-ocp-priv.app.ci.config
+      bw_item: release-controller
+    sa.release-controller-ocp-s390x-priv.api.ci.config:
+      attachment: sa.release-controller-ocp-s390x-priv.api.ci.config
+      bw_item: release-controller
+    sa.release-controller-ocp-s390x-priv.app.ci.config:
+      attachment: sa.release-controller-ocp-s390x-priv.app.ci.config
+      bw_item: release-controller
+    sa.release-controller-ocp-s390x.api.ci.config:
+      attachment: sa.release-controller-ocp-s390x.api.ci.config
+      bw_item: release-controller
+    sa.release-controller-ocp-s390x.app.ci.config:
+      attachment: sa.release-controller-ocp-s390x.app.ci.config
+      bw_item: release-controller
+    sa.release-controller-ocp.api.ci.config:
+      attachment: sa.release-controller-ocp.api.ci.config
+      bw_item: release-controller
+    sa.release-controller-ocp.app.ci.config:
+      attachment: sa.release-controller-ocp.app.ci.config
+      bw_item: release-controller
+    sa.release-controller.api.ci.config:
+      attachment: sa.release-controller.api.ci.config
+      bw_item: release-controller
+    sa.release-controller.app.ci.config:
+      attachment: sa.release-controller.app.ci.config
+      bw_item: release-controller
+  to:
+  - cluster: api.ci
+    name: release-controller-prowjob-kubeconfig
+    namespace: ci
+  - cluster: app.ci
+    name: release-controller-kubeconfigs
+    namespace: ci
+- from:
+    AWS_ACCESS_KEY_ID:
+      bw_item: arn:aws:iam::320297955214:user/app-ci-log-publisher
+      field: AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY:
+      bw_item: arn:aws:iam::320297955214:user/app-ci-log-publisher
+      field: AWS_SECRET_ACCESS_KEY
+  to:
+  - cluster: app.ci
+    name: vector-agent-secret
+    namespace: prow-logging
+- from:
+    bw_password:
+      attribute: password
+      bw_item: OpenShift CI Bitwarden Bot
+  to:
+  - cluster: app.ci
+    name: bitwarden-credentials-openshift-ci-bitwarden-bot
+    namespace: ci
+- from:
+    api-ci-kubeconfig:
+      attachment: sa.dptp-controller-manager.api.ci.config
+      bw_item: build_farm
+    arm01-kubeconfig:
+      attachment: sa.dptp-controller-manager.arm01.config
+      bw_item: build_farm
+    build01-kubeconfig:
+      attachment: sa.dptp-controller-manager.build01.config
+      bw_item: build_farm
+    build02-kubeconfig:
+      attachment: sa.dptp-controller-manager.build02.config
+      bw_item: build_farm
+    vsphere-kubeconfig:
+      attachment: sa.dptp-controller-manager.vsphere.config
+      bw_item: build_farm
+  to:
+  - cluster: app.ci
+    name: dptp-controller-manager
+    namespace: ci
+- from:
+    credentials:
+      bw_item: result-aggregator
+      field: credentials
+    passwd:
+      attachment: passwd
+      bw_item: result-aggregator
+  to:
+  - cluster_groups:
+    - build_farm
+    name: result-aggregator
+    namespace: ci
+- from:
+    sa.ci-operator.api.ci.config:
+      attachment: sa.ci-operator.api.ci.config
+      bw_item: build_farm
+    sa.ci-operator.arm01.config:
+      attachment: sa.ci-operator.arm01.config
+      bw_item: build_farm
+    sa.ci-operator.build01.config:
+      attachment: sa.ci-operator.build01.config
+      bw_item: build_farm
+    sa.ci-operator.build02.config:
+      attachment: sa.ci-operator.build02.config
+      bw_item: build_farm
+    sa.ci-operator.vsphere.config:
+      attachment: sa.ci-operator.vsphere.config
+      bw_item: build_farm
+    sa.pj-rehearse.app.ci.config:
+      attachment: sa.pj-rehearse.app.ci.config
+      bw_item: build_farm
+  to:
+  - cluster_groups:
+    - build_farm
+    name: pj-rehearse
+    namespace: ci
+- from:
+    sa.ci-chat-bot.api.ci.config:
+      attachment: sa.ci-chat-bot.api.ci.config
+      bw_item: ci-chat-bot
+    sa.ci-chat-bot.arm01.config:
+      attachment: sa.ci-chat-bot.arm01.config
+      bw_item: ci-chat-bot
+    sa.ci-chat-bot.build01.config:
+      attachment: sa.ci-chat-bot.build01.config
+      bw_item: ci-chat-bot
+    sa.ci-chat-bot.build02.config:
+      attachment: sa.ci-chat-bot.build02.config
+      bw_item: ci-chat-bot
+    sa.ci-chat-bot.vsphere.config:
+      attachment: sa.ci-chat-bot.vsphere.config
+      bw_item: ci-chat-bot
+  to:
+  - cluster: app.ci
+    name: ci-chat-bot-kubeconfigs
+    namespace: ci
+- from:
+    prometheus-k8s-basic-auth-password:
+      bw_item: app-ci-openshift-monitoring-credentials
+      field: prometheus-k8s-basic-auth-password
+  to:
+  - cluster: app.ci
+    name: app-ci-openshift-monitoring-credentials
+    namespace: ci
+- from:
+    token:
+      bw_item: cluster-bot-cloud-sso-for-ocm-ephemeral-osd
+      field: ocm-developer-productivity-staging
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: cluster-bot-cloud-sso-for-ocm-ephemeral-osd
+    namespace: ci
+- from:
+    AWS_ACCESS_KEY_ID:
+      bw_item: cluster-bot-aws-account-for-ephemeral-osd
+      field: AWS_ACCESS_KEY_ID
+    AWS_ACCOUNT_ID:
+      bw_item: cluster-bot-aws-account-for-ephemeral-osd
+      field: AWS_ACCOUNT_ID
+    AWS_SECRET_ACCESS_KEY:
+      bw_item: cluster-bot-aws-account-for-ephemeral-osd
+      field: AWS_SECRET_ACCESS_KEY
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: cluster-bot-aws-account-for-ephemeral-osd
+    namespace: ci
+- from:
+    key.json:
+      attachment: service-account.json
+      bw_item: cert-issuer
+    openshift-ci-build-farm-cert-issuer.json:
+      attachment: service-account.json
+      bw_item: openshift-ci-build-farm-cert-issuer
+  to:
+  - cluster: build02
+    name: cert-issuer
+    namespace: cert-manager
+- from:
+    key.json:
+      attachment: service-account.json
+      bw_item: cert-issuer
+  to:
+  - cluster: app.ci
+    name: cert-issuer
+    namespace: cert-manager
+- from:
+    AWS_ACCESS_KEY_ID:
+      bw_item: cert-manager
+      field: AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY:
+      bw_item: cert-manager
+      field: AWS_SECRET_ACCESS_KEY
+    key.json:
+      attachment: service-account.json
+      bw_item: cert-issuer
+  to:
+  - cluster: build01
+    name: cert-issuer
+    namespace: cert-manager
+- from:
+    ci.htpasswd:
+      attachment: ci.htpasswd
+      bw_item: prow-monitoring
+  to:
+  - cluster: app.ci
+    name: prometheus-auth-htpasswd
+    namespace: prow-monitoring
+- from:
+    password:
+      bw_item: prow-monitoring
+      field: prometheus-prow-basic-auth-password
+    username:
+      bw_item: prow-monitoring
+      field: prometheus-prow-basic-auth-username
+  to:
+  - cluster: app.ci
+    name: prometheus-auth-credentials
+    namespace: prow-monitoring
+  - cluster: app.ci
+    name: prometheus-auth-credentials
+    namespace: ci
+- from:
+    service-account.json:
+      attachment: service-account.json
+      bw_item: openshift-ci-release-signature-publisher
+  to:
+  - cluster: app.ci
+    name: release-controller-signature-publisher
+    namespace: ci
+- from:
+    openshift-ci.gpg:
+      attachment: openshift-ci.gpg
+      base64_decode: true
+      bw_item: openshift-ci-release-signature-signer
+  to:
+  - cluster: app.ci
+    name: release-controller-signature-signer
+    namespace: ci
+- from:
+    credentials.json:
+      attachment: credentials.json
+      bw_item: openshift-private-viewer
+  to:
+  - cluster: app.ci
+    name: openshift-private-viewer
+    namespace: ci
+- from:
+    app_id:
+      bw_item: slack-credentials-dptp-bot
+      field: app_id
+    client_id:
+      bw_item: slack-credentials-dptp-bot
+      field: client_id
+    client_secret:
+      bw_item: slack-credentials-dptp-bot
+      field: client_secret
+    oauth_token:
+      bw_item: slack-credentials-dptp-bot
+      field: oauth_token
+    signing_secret:
+      bw_item: slack-credentials-dptp-bot
+      field: signing_secret
+  to:
+  - cluster: app.ci
+    name: slack-credentials-dptp-bot
+    namespace: ci
+- from:
+    app_id:
+      bw_item: slack-credentials-dptp-bot-alpha
+      field: app_id
+    client_id:
+      bw_item: slack-credentials-dptp-bot-alpha
+      field: client_id
+    client_secret:
+      bw_item: slack-credentials-dptp-bot-alpha
+      field: client_secret
+    oauth_token:
+      bw_item: slack-credentials-dptp-bot-alpha
+      field: oauth_token
+    signing_secret:
+      bw_item: slack-credentials-dptp-bot-alpha
+      field: signing_secret
+  to:
+  - cluster: app.ci
+    name: slack-credentials-dptp-bot-alpha
+    namespace: ci
+- from:
+    password:
+      attribute: password
+      bw_item: jira-credentials-dptp-bot
+  to:
+  - cluster: app.ci
+    name: jira-credentials-dptp-bot
+    namespace: ci
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: token_image-pusher_api.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: docker-registry.default.svc.cluster.local:5000
+      - auth_bw_attachment: token_image-pusher_api.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: docker-registry.default.svc:5000
+      - auth_bw_attachment: token_image-pusher_api.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-pusher_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+  to:
+  - cluster: api.ci
+    name: registry-push-credentials-ci-central
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+  - cluster: api.ci
+    name: registry-push-credentials-ci-central
+    namespace: test-credentials
+    type: kubernetes.io/dockerconfigjson
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: token_image-pusher_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc.cluster.local:5000
+      - auth_bw_attachment: token_image-pusher_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc:5000
+      - auth_bw_attachment: token_image-pusher_api.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-pusher_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+  to:
+  - cluster: app.ci
+    name: registry-push-credentials-ci-central
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+  - cluster: app.ci
+    name: registry-push-credentials-ci-central
+    namespace: test-credentials
+    type: kubernetes.io/dockerconfigjson
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: token_image-puller_arm01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc.cluster.local:5000
+      - auth_bw_attachment: token_image-puller_arm01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc:5000
+      - auth_bw_attachment: token_image-puller_arm01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.arm01.not.defined.yet
+      - auth_bw_attachment: token_image-pusher_api.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-pusher_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+  to:
+  - cluster: arm01
+    name: registry-push-credentials-ci-central
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+  - cluster: arm01
+    name: registry-push-credentials-ci-central
+    namespace: test-credentials
+    type: kubernetes.io/dockerconfigjson
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: token_image-puller_build01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc.cluster.local:5000
+      - auth_bw_attachment: token_image-puller_build01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc:5000
+      - auth_bw_attachment: token_image-puller_build01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.build01.ci.openshift.org
+      - auth_bw_attachment: token_image-pusher_api.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-pusher_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+  to:
+  - cluster: build01
+    name: registry-push-credentials-ci-central
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+  - cluster: build01
+    name: registry-push-credentials-ci-central
+    namespace: test-credentials
+    type: kubernetes.io/dockerconfigjson
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: token_image-puller_build02_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc.cluster.local:5000
+      - auth_bw_attachment: token_image-puller_build02_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc:5000
+      - auth_bw_attachment: token_image-puller_build02_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.build02.ci.openshift.org
+      - auth_bw_attachment: token_image-pusher_api.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-pusher_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+  to:
+  - cluster: build02
+    name: registry-push-credentials-ci-central
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+  - cluster: build02
+    name: registry-push-credentials-ci-central
+    namespace: test-credentials
+    type: kubernetes.io/dockerconfigjson
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: token_image-puller_vsphere_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc.cluster.local:5000
+      - auth_bw_attachment: token_image-puller_vsphere_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc:5000
+      - auth_bw_attachment: token_image-puller_vsphere_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.apps.build01-us-west-2.vmc.ci.openshift.org
+      - auth_bw_attachment: token_image-pusher_api.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-pusher_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+  to:
+  - cluster: vsphere
+    name: registry-push-credentials-ci-central
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+  - cluster: vsphere
+    name: registry-push-credentials-ci-central
+    namespace: test-credentials
+    type: kubernetes.io/dockerconfigjson
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: pull-token
+        bw_item: quay.io
+        registry_url: quay.io
+      - auth_bw_attachment: token_image-puller_ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: docker-registry.default.svc:5000
+      - auth_bw_attachment: token_image-puller_ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+  to:
+  - cluster: api.ci
+    name: registry-pull-credentials
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+  - cluster: api.ci
+    name: registry-pull-credentials
+    namespace: test-credentials
+    type: kubernetes.io/dockerconfigjson
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc.cluster.local:5000
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc:5000
+      - auth_bw_attachment: token_image-puller_ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+  to:
+  - cluster: app.ci
+    name: registry-pull-credentials
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+  - cluster: app.ci
+    name: registry-pull-credentials
+    namespace: test-credentials
+    type: kubernetes.io/dockerconfigjson
+  - cluster: app.ci
+    name: registry-pull-credentials
+    namespace: origin
+    type: kubernetes.io/dockerconfigjson
+  - cluster: app.ci
+    name: registry-pull-credentials
+    namespace: ocp
+    type: kubernetes.io/dockerconfigjson
+  - cluster: app.ci
+    name: registry-pull-credentials
+    namespace: ocp-priv
+    type: kubernetes.io/dockerconfigjson
+  - cluster: app.ci
+    name: registry-pull-credentials
+    namespace: ocp-ppc64le
+    type: kubernetes.io/dockerconfigjson
+  - cluster: app.ci
+    name: registry-pull-credentials
+    namespace: ocp-ppc64le-priv
+    type: kubernetes.io/dockerconfigjson
+  - cluster: app.ci
+    name: registry-pull-credentials
+    namespace: ocp-s390x
+    type: kubernetes.io/dockerconfigjson
+  - cluster: app.ci
+    name: registry-pull-credentials
+    namespace: ocp-s390x-priv
+    type: kubernetes.io/dockerconfigjson
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: token_image-puller_arm01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc.cluster.local:5000
+      - auth_bw_attachment: token_image-puller_arm01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc:5000
+      - auth_bw_attachment: token_image-puller_arm01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.arm01.not.defined.yet
+      - auth_bw_attachment: token_image-puller_ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+  to:
+  - cluster: arm01
+    name: registry-pull-credentials
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+  - cluster: arm01
+    name: registry-pull-credentials
+    namespace: test-credentials
+    type: kubernetes.io/dockerconfigjson
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: token_image-puller_build01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc.cluster.local:5000
+      - auth_bw_attachment: token_image-puller_build01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc:5000
+      - auth_bw_attachment: token_image-puller_build01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.build01.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+  to:
+  - cluster: build01
+    name: registry-pull-credentials
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+  - cluster: build01
+    name: registry-pull-credentials
+    namespace: test-credentials
+    type: kubernetes.io/dockerconfigjson
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: token_image-puller_build02_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc.cluster.local:5000
+      - auth_bw_attachment: token_image-puller_build02_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc:5000
+      - auth_bw_attachment: token_image-puller_build02_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.build02.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+  to:
+  - cluster: build02
+    name: registry-pull-credentials
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+  - cluster: build02
+    name: registry-pull-credentials
+    namespace: test-credentials
+    type: kubernetes.io/dockerconfigjson
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: token_image-puller_vsphere_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc.cluster.local:5000
+      - auth_bw_attachment: token_image-puller_vsphere_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc:5000
+      - auth_bw_attachment: token_image-puller_vsphere_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.apps.build01-us-west-2.vmc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+  to:
+  - cluster: vsphere
+    name: registry-pull-credentials
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+  - cluster: vsphere
+    name: registry-pull-credentials
+    namespace: test-credentials
+    type: kubernetes.io/dockerconfigjson
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: token_image-puller_ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: docker-registry.default.svc.cluster.local:5000
+      - auth_bw_attachment: token_image-puller_ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: docker-registry.default.svc:5000
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+      - auth_bw_attachment: token_image-puller_ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_arm01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.arm01.not.defined.yet
+      - auth_bw_attachment: token_image-puller_build01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.build01.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_build02_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.build02.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_vsphere_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.apps.build01-us-west-2.vmc.ci.openshift.org
+  to:
+  - cluster: api.ci
+    name: registry-pull-credentials-all
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+  - cluster: api.ci
+    name: registry-pull-credentials-all
+    namespace: test-credentials
+    type: kubernetes.io/dockerconfigjson
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc.cluster.local:5000
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc:5000
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+      - auth_bw_attachment: token_image-puller_ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_arm01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.arm01.not.defined.yet
+      - auth_bw_attachment: token_image-puller_build01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.build01.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_build02_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.build02.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_vsphere_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.apps.build01-us-west-2.vmc.ci.openshift.org
+  to:
+  - cluster: app.ci
+    name: registry-pull-credentials-all
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+  - cluster: app.ci
+    name: registry-pull-credentials-all
+    namespace: test-credentials
+    type: kubernetes.io/dockerconfigjson
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: token_image-puller_arm01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc.cluster.local:5000
+      - auth_bw_attachment: token_image-puller_arm01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc:5000
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+      - auth_bw_attachment: token_image-puller_ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_arm01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.arm01.not.defined.yet
+      - auth_bw_attachment: token_image-puller_build01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.build01.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_build02_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.build02.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_vsphere_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.apps.build01-us-west-2.vmc.ci.openshift.org
+  to:
+  - cluster: arm01
+    name: registry-pull-credentials-all
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+  - cluster: arm01
+    name: registry-pull-credentials-all
+    namespace: test-credentials
+    type: kubernetes.io/dockerconfigjson
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: token_image-puller_build01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc.cluster.local:5000
+      - auth_bw_attachment: token_image-puller_build01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc:5000
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+      - auth_bw_attachment: token_image-puller_ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_arm01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.arm01.not.defined.yet
+      - auth_bw_attachment: token_image-puller_build01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.build01.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_build02_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.build02.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_vsphere_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.apps.build01-us-west-2.vmc.ci.openshift.org
+  to:
+  - cluster: build01
+    name: registry-pull-credentials-all
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+  - cluster: build01
+    name: registry-pull-credentials-all
+    namespace: test-credentials
+    type: kubernetes.io/dockerconfigjson
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: token_image-puller_build02_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc.cluster.local:5000
+      - auth_bw_attachment: token_image-puller_build02_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc:5000
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+      - auth_bw_attachment: token_image-puller_ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_arm01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.arm01.not.defined.yet
+      - auth_bw_attachment: token_image-puller_build01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.build01.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_build02_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.build02.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_vsphere_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.apps.build01-us-west-2.vmc.ci.openshift.org
+  to:
+  - cluster: build02
+    name: registry-pull-credentials-all
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+  - cluster: build02
+    name: registry-pull-credentials-all
+    namespace: test-credentials
+    type: kubernetes.io/dockerconfigjson
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: token_image-puller_vsphere_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc.cluster.local:5000
+      - auth_bw_attachment: token_image-puller_vsphere_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: image-registry.openshift-image-registry.svc:5000
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+      - auth_bw_attachment: token_image-puller_ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_arm01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.arm01.not.defined.yet
+      - auth_bw_attachment: token_image-puller_build01_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.build01.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_build02_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.build02.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_vsphere_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.apps.build01-us-west-2.vmc.ci.openshift.org
+  to:
+  - cluster: vsphere
+    name: registry-pull-credentials-all
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+  - cluster: vsphere
+    name: registry-pull-credentials-all
+    namespace: test-credentials
+    type: kubernetes.io/dockerconfigjson
+- from:
+    insights-live.yaml:
+      attachment: insights-live.yaml
+      bw_item: insights-ci-account
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: insights-live
+    namespace: test-credentials
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: push-token
+        bw_item: quay.io
+        registry_url: quay.io
+      - auth_bw_attachment: push-token
+        bw_item: docker.io
+        registry_url: https://index.docker.io/v1/
+  to:
+  - cluster: app.ci
+    name: registry-push-credentials-openshift
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+  - cluster: build01
+    name: registry-push-credentials-openshift
+    namespace: ci
+    type: kubernetes.io/dockerconfigjson
+- from:
+    appid:
+      bw_item: openshift-prow-app
+      field: appid
+    cert:
+      attachment: openshift-prow.2020-12-03.private-key.pem
+      bw_item: openshift-prow-app
+  to:
+  - cluster: app.ci
+    name: openshift-prow-github-app
+    namespace: ci
+- from:
+    client-id:
+      bw_item: dex
+      field: rh-internal-sso-client-id
+    client-secret:
+      bw_item: dex
+      field: rh-internal-sso-client-secret
+  to:
+  - cluster: app.ci
+    name: rh-sso
+    namespace: dex
+- from:
+    build01-id:
+      bw_item: dex
+      field: build01-id
+    build01-secret:
+      bw_item: dex
+      field: build01-secret
+  to:
+  - cluster: app.ci
+    name: build01-secret
+    namespace: dex
+  - cluster: app.ci
+    name: build01-dex-oidc
+    namespace: ci
+- from:
+    clientSecret:
+      bw_item: dex
+      field: build01-secret
+  to:
+  - cluster: build01
+    name: dex-rh-sso
+    namespace: openshift-config
+- from:
+    build02-id:
+      bw_item: dex
+      field: build02-id
+    build02-secret:
+      bw_item: dex
+      field: build02-secret
+  to:
+  - cluster: app.ci
+    name: build02-secret
+    namespace: dex
+  - cluster: app.ci
+    name: build02-dex-oidc
+    namespace: ci
+- from:
+    dpcr-id:
+      bw_item: dex
+      field: dpcr-id
+    dpcr-secret:
+      bw_item: dex
+      field: dpcr-secret
+  to:
+  - cluster: app.ci
+    name: dpcr-secret
+    namespace: dex
+- from:
+    clientSecret:
+      bw_item: dex
+      field: build02-secret
+  to:
+  - cluster: build02
+    name: dex-rh-sso
+    namespace: openshift-config
+- from:
+    clientSecret:
+      bw_item: build_farm_01_cluster
+      field: github_client_secret
+  to:
+  - cluster: build01
+    name: github-client-secret
+    namespace: openshift-config
+- from:
+    clientSecret:
+      bw_item: build_farm_02_cluster
+      field: github_client_secret
+  to:
+  - cluster: build02
+    name: github-client-secret
+    namespace: openshift-config
+- from:
+    clientSecret:
+      bw_item: build_farm_vsphere_cluster
+      field: github_client_secret
+  to:
+  - cluster: vsphere
+    name: github-client-secret
+    namespace: openshift-config
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: token_image-puller_ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-pusher_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+  to:
+  - cluster: app.ci
+    name: registry-push-credentials-image-mirror-from-apici-to-appci
+    namespace: ci
+- from:
+    .awscred:
+      attachment: .awscred
+      bw_item: openshift-ci-2-aws-credentials
+    insights-live.yaml:
+      attachment: insights-live.yaml
+      bw_item: insights-ci-account
+    ops-mirror.pem:
+      attachment: cert-key.pem
+      bw_item: mirror.openshift.com
+    pull-secret:
+      dockerconfigJSON:
+      - auth_bw_attachment: auth
+        bw_item: api.ci-pull-secret
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+    ssh-privatekey:
+      attachment: id_rsa
+      bw_item: openshift-ci-2-aws-credentials
+    ssh-publickey:
+      attachment: id_rsa.pub
+      bw_item: openshift-ci-2-aws-credentials
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: cluster-secrets-aws-2
+    namespace: ci
+- from:
+    .dockerconfigjson:
+      dockerconfigJSON:
+      - auth_bw_attachment: auth
+        bw_item: api.ci-pull-secret
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+  to:
+  - cluster: app.ci
+    name: pull-secret
+    namespace: ci-cluster-pool
+    type: kubernetes.io/dockerconfigjson
+- from:
+    aws_access_key_id:
+      bw_item: openshift-ci-pools-hive
+      field: aws_access_key_id
+    aws_secret_access_key:
+      bw_item: openshift-ci-pools-hive
+      field: aws_secret_access_key
+  to:
+  - cluster: app.ci
+    name: hive-aws-credentials
+    namespace: ci-cluster-pool
+- from:
+    .awscred:
+      attachment: .awscred
+      bw_item: jenkins-ci-iam
+    pull-secret:
+      dockerconfigJSON:
+      - auth_bw_attachment: auth
+        bw_item: api.ci-pull-secret
+        registry_url: registry.svc.ci.openshift.org
+      - auth_bw_attachment: token_image-puller_app.ci_reg_auth_value.txt
+        bw_item: build_farm
+        registry_url: registry.ci.openshift.org
+      - auth_bw_attachment: auth
+        bw_item: cloud.openshift.com-pull-secret
+        email_bw_field: email
+        registry_url: cloud.openshift.com
+      - auth_bw_attachment: auth
+        bw_item: quay.io-pull-secret
+        email_bw_field: email
+        registry_url: quay.io
+      - auth_bw_attachment: auth
+        bw_item: registry.connect.redhat.com-pull-secret
+        email_bw_field: email
+        registry_url: registry.connect.redhat.com
+      - auth_bw_attachment: auth
+        bw_item: registry.redhat.io-pull-secret
+        email_bw_field: email
+        registry_url: registry.redhat.io
+    ssh-privatekey:
+      attachment: ssh-privatekey
+      bw_item: jenkins-ci-iam
+    ssh-publickey:
+      attachment: ssh-publickey
+      bw_item: jenkins-ci-iam
+  to:
+  - cluster_groups:
+    - non_app_ci
+    name: cluster-secrets-hypershift
+    namespace: ci
+- from:
+    vault-secret-manager-id:
+      bw_item: dex
+      field: vault-secret-manager-client-id
+    vault-secret-manager-secret:
+      bw_item: dex
+      field: vault-secret-manager-client-secret
+  to:
+  - cluster: app.ci
+    name: vault-secret-manager
+    namespace: dex
+  - cluster: app.ci
+    name: vault-secret-collection-manager-oauth
+    namespace: ci
+- from:
+    secret:
+      bw_item: vault-secret-collection-manager-cookie-secret
+      field: secret
+  to:
+  - cluster: app.ci
+    name: vault-secret-collection-manager-cookie-secret
+    namespace: ci
+user_secrets_target_clusters:
+- api.ci
+- app.ci
+- arm01
+- build01
+- build02
+- vsphere

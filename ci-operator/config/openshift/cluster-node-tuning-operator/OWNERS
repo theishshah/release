@@ -6,8 +6,9 @@ approvers:
 - sjug
 options: {}
 reviewers:
-- cep235
-- deepthidharwar
+- arangogutierrez
+- dagrayvid
 - jmencak
+- kpouget
 - sjug
 - zvonkok

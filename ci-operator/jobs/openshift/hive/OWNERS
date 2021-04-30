@@ -2,11 +2,21 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
+- abhinavdahiya
 - abutcher
-- csrwng
+- akhil-rane
 - dgoodwin
+- gregsheremeta
 - joelddiaz
-- lalatendumohanty
-- staebler
+- suhanime
 - twiest
 options: {}
+reviewers:
+- abhinavdahiya
+- abutcher
+- akhil-rane
+- dgoodwin
+- gregsheremeta
+- joelddiaz
+- suhanime
+- twiest

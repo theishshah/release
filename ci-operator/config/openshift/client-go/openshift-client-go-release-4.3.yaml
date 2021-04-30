@@ -4,13 +4,10 @@ build_root:
     namespace: openshift
     tag: golang-1.12
 promotion:
-  disabled: true
   name: "4.3"
   namespace: ocp
 resources:
   '*':
-    limits:
-      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -22,3 +19,7 @@ tests:
   commands: make generate; go build ./...; make verify
   container:
     from: src
+zz_generated_metadata:
+  branch: release-4.3
+  org: openshift
+  repo: client-go

@@ -2,21 +2,25 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
-- alexnpavel
+- asmacdo
 - camilamacedo86
 - estroz
-- hasbro17
+- fabianvf
 - jmccormick2001
+- jmrodri
 - joelanford
-- shawn-hurley
+- marc-obrien
 - theishshah
+- varshaprasad96
 options: {}
 reviewers:
-- alexnpavel
+- asmacdo
 - camilamacedo86
 - estroz
-- hasbro17
+- fabianvf
 - jmccormick2001
+- jmrodri
 - joelanford
-- shawn-hurley
+- marc-obrien
 - theishshah
+- varshaprasad96

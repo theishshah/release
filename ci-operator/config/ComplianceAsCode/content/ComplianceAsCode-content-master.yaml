@@ -1,0 +1,104 @@
+build_root:
+  image_stream_tag:
+    name: release
+    namespace: openshift
+    tag: golang-1.15
+images:
+- dockerfile_path: Dockerfiles/ocp4_content
+  to: ocp4-content-ds
+resources:
+  '*':
+    requests:
+      cpu: 200m
+      memory: 400Mi
+tag_specification:
+  name: "4.8"
+  namespace: ocp
+tests:
+- as: e2e-aws-rhcos4-e8
+  steps:
+    cluster_profile: aws
+    test:
+    - as: test
+      cli: latest
+      commands: content=ocp4-content-ds make -f tests/ocp4e2e/Makefile e2e PROFILE=e8
+        PRODUCT=rhcos4
+      from: src
+      resources:
+        requests:
+          cpu: 100m
+    workflow: ipi-aws
+- as: e2e-aws-ocp4-e8
+  steps:
+    cluster_profile: aws
+    test:
+    - as: test
+      cli: latest
+      commands: content=ocp4-content-ds make -f tests/ocp4e2e/Makefile e2e PROFILE=e8
+        PRODUCT=ocp4
+      from: src
+      resources:
+        requests:
+          cpu: 100m
+    workflow: ipi-aws
+- as: e2e-aws-ocp4-moderate
+  steps:
+    cluster_profile: aws
+    test:
+    - as: test
+      cli: latest
+      commands: content=ocp4-content-ds make -f tests/ocp4e2e/Makefile e2e PROFILE=moderate
+        PRODUCT=ocp4
+      from: src
+      resources:
+        requests:
+          cpu: 100m
+    workflow: ipi-aws
+- as: e2e-aws-ocp4-cis
+  steps:
+    cluster_profile: aws
+    test:
+    - as: test
+      cli: latest
+      commands: content=ocp4-content-ds make -f tests/ocp4e2e/Makefile e2e PROFILE=cis
+        PRODUCT=ocp4
+      from: src
+      resources:
+        requests:
+          cpu: 100m
+    workflow: ipi-aws
+- as: e2e-aws-ocp4-cis-node
+  steps:
+    cluster_profile: aws
+    test:
+    - as: test
+      cli: latest
+      commands: content=ocp4-content-ds make -f tests/ocp4e2e/Makefile e2e PROFILE=cis-node
+        PRODUCT=ocp4
+      from: src
+      resources:
+        requests:
+          cpu: 100m
+    workflow: ipi-aws
+- as: e2e-aws-rhcos4-moderate
+  steps:
+    cluster_profile: aws
+    env:
+      FIPS_ENABLED: "true"
+    pre:
+    - chain: ipi-aws-pre
+    - ref: fips-check
+    test:
+    - as: test
+      cli: latest
+      commands: content=ocp4-content-ds make -f tests/ocp4e2e/Makefile e2e PROFILE=moderate
+        PRODUCT=rhcos4
+      from: src
+      resources:
+        requests:
+          cpu: 100m
+    workflow: ipi-aws
+zz_generated_metadata:
+  branch: master
+  org: ComplianceAsCode
+  repo: content

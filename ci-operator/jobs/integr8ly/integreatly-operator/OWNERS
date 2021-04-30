@@ -2,30 +2,26 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
-- aidenkeating
-- austincunningham
-- damienomurchu
-- dimitraz
-- jameelb
+- jessesarn
 - jjaferson
-- kevfan
-- maleck13
+- laurafitzgerald
 - matskiv
-- mikenairn
-- philbrookes
-- trepel
-options: {}
-reviewers:
-- aidenkeating
-- austincunningham
-- damienomurchu
-- dimitraz
-- jameelb
-- jjaferson
-- kevfan
-- maleck13
-- matskiv
-- mikenairn
 - philbrookes
 - pmccarthy
-- trepel
+- sergioifg94
+options: {}
+reviewers:
+- austincunningham
+- boomatang
+- briangallagher
+- cathaloconnorrh
+- jjaferson
+- kevfan
+- laurafitzgerald
+- matskiv
+- mikenairn
+- mstokluska
+- philbrookes
+- pmccarthy
+- psturc
+- sergioifg94

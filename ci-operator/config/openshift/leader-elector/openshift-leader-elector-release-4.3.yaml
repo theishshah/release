@@ -13,13 +13,10 @@ images:
   from: base
   to: leader-elector
 promotion:
-  disabled: true
   name: "4.3"
   namespace: ocp
 resources:
   '*':
-    limits:
-      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -31,3 +28,7 @@ tests:
   commands: test -z $(go fmt ./election/lib)
   container:
     from: src
+zz_generated_metadata:
+  branch: release-4.3
+  org: openshift
+  repo: leader-elector

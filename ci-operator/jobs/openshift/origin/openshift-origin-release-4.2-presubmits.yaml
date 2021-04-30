@@ -4,6 +4,7 @@ presubmits:
     always_run: true
     branches:
     - release-4.2
+    cluster: build01
     context: ci/prow/e2e-aws
     decorate: true
     decoration_config:
@@ -16,30 +17,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-4.2
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=origin
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
         - --secret-dir=/usr/local/e2e-aws-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-aws
-        - --template=/usr/local/e2e-aws
         command:
         - ci-operator
-        env:
-        - name: CLUSTER_TYPE
-          value: aws
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-origin-release-4.2.yaml
-              name: ci-operator-4.2-configs
-        - name: JOB_NAME_SAFE
-          value: e2e-aws
-        - name: TEST_COMMAND
-          value: TEST_SUITE=openshift/conformance/parallel run-tests
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -47,32 +32,45 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
         - mountPath: /usr/local/e2e-aws-cluster-profile
           name: cluster-profile
-        - mountPath: /usr/local/e2e-aws
-          name: job-definition
-          subPath: cluster-launch-installer-e2e.yaml
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
           - secret:
               name: cluster-secrets-aws
-      - configMap:
-          name: prow-job-cluster-launch-installer-e2e
-        name: job-definition
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )e2e-aws,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
     - release-4.2
+    cluster: build01
     context: ci/prow/e2e-aws-disruptive
     decorate: true
     decoration_config:
@@ -86,14 +84,11 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-4.2
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=origin
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
         - --secret-dir=/usr/local/e2e-aws-disruptive-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-aws-disruptive
         - --template=/usr/local/e2e-aws-disruptive
         command:
@@ -101,11 +96,6 @@ presubmits:
         env:
         - name: CLUSTER_TYPE
           value: aws
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-origin-release-4.2.yaml
-              name: ci-operator-4.2-configs
         - name: JOB_NAME_SAFE
           value: e2e-aws-disruptive
         - name: TEST_COMMAND
@@ -118,16 +108,31 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
         - mountPath: /usr/local/e2e-aws-disruptive-cluster-profile
           name: cluster-profile
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
         - mountPath: /usr/local/e2e-aws-disruptive
           name: job-definition
           subPath: cluster-launch-installer-e2e.yaml
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
@@ -136,14 +141,18 @@ presubmits:
       - configMap:
           name: prow-job-cluster-launch-installer-e2e
         name: job-definition
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )e2e-aws-disruptive,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
     - release-4.2
+    cluster: build01
     context: ci/prow/e2e-aws-image-registry
     decorate: true
     decoration_config:
@@ -157,30 +166,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-4.2
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=origin
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
         - --secret-dir=/usr/local/e2e-aws-image-registry-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-aws-image-registry
-        - --template=/usr/local/e2e-aws-image-registry
         command:
         - ci-operator
-        env:
-        - name: CLUSTER_TYPE
-          value: aws
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-origin-release-4.2.yaml
-              name: ci-operator-4.2-configs
-        - name: JOB_NAME_SAFE
-          value: e2e-aws-image-registry
-        - name: TEST_COMMAND
-          value: TEST_SUITE=openshift/image-registry run-tests
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -188,32 +181,45 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
         - mountPath: /usr/local/e2e-aws-image-registry-cluster-profile
           name: cluster-profile
-        - mountPath: /usr/local/e2e-aws-image-registry
-          name: job-definition
-          subPath: cluster-launch-installer-e2e.yaml
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
           - secret:
               name: cluster-secrets-aws
-      - configMap:
-          name: prow-job-cluster-launch-installer-e2e
-        name: job-definition
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )e2e-aws-image-registry,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
     - release-4.2
+    cluster: build01
     context: ci/prow/e2e-aws-jenkins
     decorate: true
     decoration_config:
@@ -226,30 +232,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-4.2
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=origin
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
         - --secret-dir=/usr/local/e2e-aws-jenkins-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-aws-jenkins
-        - --template=/usr/local/e2e-aws-jenkins
         command:
         - ci-operator
-        env:
-        - name: CLUSTER_TYPE
-          value: aws
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-origin-release-4.2.yaml
-              name: ci-operator-4.2-configs
-        - name: JOB_NAME_SAFE
-          value: e2e-aws-jenkins
-        - name: TEST_COMMAND
-          value: TEST_SUITE=openshift/jenkins-e2e run-tests
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -257,32 +247,45 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
         - mountPath: /usr/local/e2e-aws-jenkins-cluster-profile
           name: cluster-profile
-        - mountPath: /usr/local/e2e-aws-jenkins
-          name: job-definition
-          subPath: cluster-launch-installer-e2e.yaml
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
           - secret:
               name: cluster-secrets-aws
-      - configMap:
-          name: prow-job-cluster-launch-installer-e2e
-        name: job-definition
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )e2e-aws-jenkins,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - release-4.2
+    cluster: build01
     context: ci/prow/e2e-aws-serial
     decorate: true
     decoration_config:
@@ -295,30 +298,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-4.2
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=origin
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
         - --secret-dir=/usr/local/e2e-aws-serial-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-aws-serial
-        - --template=/usr/local/e2e-aws-serial
         command:
         - ci-operator
-        env:
-        - name: CLUSTER_TYPE
-          value: aws
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-origin-release-4.2.yaml
-              name: ci-operator-4.2-configs
-        - name: JOB_NAME_SAFE
-          value: e2e-aws-serial
-        - name: TEST_COMMAND
-          value: TEST_SUITE=openshift/conformance/serial run-tests
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -326,32 +313,45 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
         - mountPath: /usr/local/e2e-aws-serial-cluster-profile
           name: cluster-profile
-        - mountPath: /usr/local/e2e-aws-serial
-          name: job-definition
-          subPath: cluster-launch-installer-e2e.yaml
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
           - secret:
               name: cluster-secrets-aws
-      - configMap:
-          name: prow-job-cluster-launch-installer-e2e
-        name: job-definition
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )e2e-aws-serial,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - release-4.2
+    cluster: build01
     context: ci/prow/e2e-azure
     decorate: true
     decoration_config:
@@ -364,30 +364,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-4.2
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=origin
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
         - --secret-dir=/usr/local/e2e-azure-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-azure
-        - --template=/usr/local/e2e-azure
         command:
         - ci-operator
-        env:
-        - name: CLUSTER_TYPE
-          value: azure4
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-origin-release-4.2.yaml
-              name: ci-operator-4.2-configs
-        - name: JOB_NAME_SAFE
-          value: e2e-azure
-        - name: TEST_COMMAND
-          value: TEST_SUITE=openshift/conformance/parallel run-tests
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -395,32 +379,45 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
         - mountPath: /usr/local/e2e-azure-cluster-profile
           name: cluster-profile
-        - mountPath: /usr/local/e2e-azure
-          name: job-definition
-          subPath: cluster-launch-installer-e2e.yaml
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
           - secret:
               name: cluster-secrets-azure4
-      - configMap:
-          name: prow-job-cluster-launch-installer-e2e
-        name: job-definition
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )e2e-azure,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - release-4.2
+    cluster: build01
     context: ci/prow/e2e-cmd
     decorate: true
     decoration_config:
@@ -433,30 +430,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-4.2
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=origin
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
         - --secret-dir=/usr/local/e2e-cmd-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-cmd
-        - --template=/usr/local/e2e-cmd
         command:
         - ci-operator
-        env:
-        - name: CLUSTER_TYPE
-          value: aws
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-origin-release-4.2.yaml
-              name: ci-operator-4.2-configs
-        - name: JOB_NAME_SAFE
-          value: e2e-cmd
-        - name: TEST_COMMAND
-          value: TEST_SUITE=openshift/test-cmd run-tests
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -464,32 +445,45 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
         - mountPath: /usr/local/e2e-cmd-cluster-profile
           name: cluster-profile
-        - mountPath: /usr/local/e2e-cmd
-          name: job-definition
-          subPath: cluster-launch-installer-e2e.yaml
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
           - secret:
               name: cluster-secrets-aws
-      - configMap:
-          name: prow-job-cluster-launch-installer-e2e
-        name: job-definition
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )e2e-cmd,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - release-4.2
+    cluster: build01
     context: ci/prow/e2e-conformance-k8s
     decorate: true
     decoration_config:
@@ -502,30 +496,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-4.2
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=origin
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
         - --secret-dir=/usr/local/e2e-conformance-k8s-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-conformance-k8s
-        - --template=/usr/local/e2e-conformance-k8s
         command:
         - ci-operator
-        env:
-        - name: CLUSTER_TYPE
-          value: aws
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-origin-release-4.2.yaml
-              name: ci-operator-4.2-configs
-        - name: JOB_NAME_SAFE
-          value: e2e-conformance-k8s
-        - name: TEST_COMMAND
-          value: test/extended/conformance-k8s.sh
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -533,32 +511,45 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
         - mountPath: /usr/local/e2e-conformance-k8s-cluster-profile
           name: cluster-profile
-        - mountPath: /usr/local/e2e-conformance-k8s
-          name: job-definition
-          subPath: cluster-launch-installer-src.yaml
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
           - secret:
               name: cluster-secrets-aws
-      - configMap:
-          name: prow-job-cluster-launch-installer-src
-        name: job-definition
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )e2e-conformance-k8s,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - release-4.2
+    cluster: build01
     context: ci/prow/e2e-gcp
     decorate: true
     decoration_config:
@@ -571,30 +562,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-4.2
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=origin
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
         - --secret-dir=/usr/local/e2e-gcp-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-gcp
-        - --template=/usr/local/e2e-gcp
         command:
         - ci-operator
-        env:
-        - name: CLUSTER_TYPE
-          value: gcp
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-origin-release-4.2.yaml
-              name: ci-operator-4.2-configs
-        - name: JOB_NAME_SAFE
-          value: e2e-gcp
-        - name: TEST_COMMAND
-          value: TEST_SUITE=openshift/conformance/parallel run-tests
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -602,16 +577,28 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
         - mountPath: /usr/local/e2e-gcp-cluster-profile
           name: cluster-profile
-        - mountPath: /usr/local/e2e-gcp
-          name: job-definition
-          subPath: cluster-launch-installer-e2e.yaml
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
@@ -619,17 +606,18 @@ presubmits:
               name: cluster-secrets-gcp
           - configMap:
               name: cluster-profile-gcp
-      - configMap:
-          name: prow-job-cluster-launch-installer-e2e
-        name: job-definition
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )e2e-gcp,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
     - release-4.2
+    cluster: build01
     context: ci/prow/e2e-gcp-builds
     decorate: true
     decoration_config:
@@ -643,30 +631,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-4.2
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=origin
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
         - --secret-dir=/usr/local/e2e-gcp-builds-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-gcp-builds
-        - --template=/usr/local/e2e-gcp-builds
         command:
         - ci-operator
-        env:
-        - name: CLUSTER_TYPE
-          value: gcp
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-origin-release-4.2.yaml
-              name: ci-operator-4.2-configs
-        - name: JOB_NAME_SAFE
-          value: e2e-gcp-builds
-        - name: TEST_COMMAND
-          value: TEST_SUITE=openshift/build run-tests
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -674,16 +646,28 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
         - mountPath: /usr/local/e2e-gcp-builds-cluster-profile
           name: cluster-profile
-        - mountPath: /usr/local/e2e-gcp-builds
-          name: job-definition
-          subPath: cluster-launch-installer-e2e.yaml
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
@@ -691,17 +675,18 @@ presubmits:
               name: cluster-secrets-gcp
           - configMap:
               name: cluster-profile-gcp
-      - configMap:
-          name: prow-job-cluster-launch-installer-e2e
-        name: job-definition
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )e2e-gcp-builds,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
     - release-4.2
+    cluster: build01
     context: ci/prow/e2e-gcp-image-ecosystem
     decorate: true
     decoration_config:
@@ -715,30 +700,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-4.2
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=origin
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
         - --secret-dir=/usr/local/e2e-gcp-image-ecosystem-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-gcp-image-ecosystem
-        - --template=/usr/local/e2e-gcp-image-ecosystem
         command:
         - ci-operator
-        env:
-        - name: CLUSTER_TYPE
-          value: gcp
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-origin-release-4.2.yaml
-              name: ci-operator-4.2-configs
-        - name: JOB_NAME_SAFE
-          value: e2e-gcp-image-ecosystem
-        - name: TEST_COMMAND
-          value: TEST_SUITE=openshift/image-ecosystem run-tests
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -746,16 +715,28 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
         - mountPath: /usr/local/e2e-gcp-image-ecosystem-cluster-profile
           name: cluster-profile
-        - mountPath: /usr/local/e2e-gcp-image-ecosystem
-          name: job-definition
-          subPath: cluster-launch-installer-e2e.yaml
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
@@ -763,17 +744,18 @@ presubmits:
               name: cluster-secrets-gcp
           - configMap:
               name: cluster-profile-gcp
-      - configMap:
-          name: prow-job-cluster-launch-installer-e2e
-        name: job-definition
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )e2e-gcp-image-ecosystem,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - release-4.2
+    cluster: build01
     context: ci/prow/e2e-gcp-upgrade
     decorate: true
     decoration_config:
@@ -786,23 +768,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-4.2
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=origin
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
         - --secret-dir=/usr/local/e2e-gcp-upgrade-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-gcp-upgrade
         command:
         - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-origin-release-4.2.yaml
-              name: ci-operator-4.2-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -810,13 +783,28 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
         - mountPath: /usr/local/e2e-gcp-upgrade-cluster-profile
           name: cluster-profile
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
@@ -824,14 +812,18 @@ presubmits:
               name: cluster-secrets-gcp
           - configMap:
               name: cluster-profile-gcp
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )e2e-gcp-upgrade,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
     - release-4.2
+    cluster: vsphere
     context: ci/prow/e2e-vsphere
     decorate: true
     decoration_config:
@@ -845,30 +837,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-4.2
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=origin
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
         - --secret-dir=/usr/local/e2e-vsphere-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-vsphere
-        - --template=/usr/local/e2e-vsphere
         command:
         - ci-operator
-        env:
-        - name: CLUSTER_TYPE
-          value: vsphere
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-origin-release-4.2.yaml
-              name: ci-operator-4.2-configs
-        - name: JOB_NAME_SAFE
-          value: e2e-vsphere
-        - name: TEST_COMMAND
-          value: TEST_SUITE=openshift/conformance/parallel run-tests
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -876,32 +852,45 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
         - mountPath: /usr/local/e2e-vsphere-cluster-profile
           name: cluster-profile
-        - mountPath: /usr/local/e2e-vsphere
-          name: job-definition
-          subPath: cluster-launch-installer-upi-e2e.yaml
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
           - secret:
               name: cluster-secrets-vsphere
-      - configMap:
-          name: prow-job-cluster-launch-installer-upi-e2e
-        name: job-definition
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )e2e-vsphere,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - release-4.2
+    cluster: build01
     context: ci/prow/images
     decorate: true
     decoration_config:
@@ -914,23 +903,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-4.2
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=origin
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --report-credentials-file=/etc/report/credentials
         - --target=[images]
         - --target=[release:latest]
+        - --target=artifacts
         command:
         - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-origin-release-4.2.yaml
-              name: ci-operator-4.2-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -938,19 +918,29 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )images,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - release-4.2
+    cluster: build01
     context: ci/prow/images-artifacts
     decorate: true
     decoration_config:
@@ -963,22 +953,12 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-4.2
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=origin
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --report-credentials-file=/etc/report/credentials
         - --target=images-artifacts
         command:
         - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-origin-release-4.2.yaml
-              name: ci-operator-4.2-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -986,89 +966,29 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )images-artifacts,?($|\s.*)
-  - agent: kubernetes
-    always_run: false
-    branches:
-    - release-4.2
-    context: ci/prow/launch-vsphere
-    decorate: true
-    decoration_config:
-      skip_cloning: true
-    labels:
-      ci-operator.openshift.io/prowgen-controlled: "true"
-      pj-rehearse.openshift.io/can-be-rehearsed: "true"
-    name: pull-ci-openshift-origin-release-4.2-launch-vsphere
-    optional: true
-    rerun_command: /test launch-vsphere
-    spec:
-      containers:
-      - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-4.2
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=origin
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --secret-dir=/usr/local/launch-vsphere-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
-        - --target=launch-vsphere
-        - --template=/usr/local/launch-vsphere
-        command:
-        - ci-operator
-        env:
-        - name: CLUSTER_TYPE
-          value: vsphere
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-origin-release-4.2.yaml
-              name: ci-operator-4.2-configs
-        - name: JOB_NAME_SAFE
-          value: launch-vsphere
-        - name: TEST_COMMAND
-          value: sleep 7200 & wait
-        image: ci-operator:latest
-        imagePullPolicy: Always
-        name: ""
-        resources:
-          requests:
-            cpu: 10m
-        volumeMounts:
-        - mountPath: /usr/local/launch-vsphere-cluster-profile
-          name: cluster-profile
-        - mountPath: /usr/local/launch-vsphere
-          name: job-definition
-          subPath: cluster-launch-installer-upi-e2e.yaml
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
-          readOnly: true
-      serviceAccountName: ci-operator
-      volumes:
-      - name: cluster-profile
-        projected:
-          sources:
-          - secret:
-              name: cluster-secrets-vsphere
-      - configMap:
-          name: prow-job-cluster-launch-installer-upi-e2e
-        name: job-definition
-      - name: sentry-dsn
-        secret:
-          secretName: sentry-dsn
-    trigger: (?m)^/test( | .* )launch-vsphere,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - release-4.2
+    cluster: build01
     context: ci/prow/unit
     decorate: true
     decoration_config:
@@ -1081,22 +1001,12 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-4.2
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=origin
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --report-credentials-file=/etc/report/credentials
         - --target=unit
         command:
         - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-origin-release-4.2.yaml
-              name: ci-operator-4.2-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -1104,19 +1014,29 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )unit,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - release-4.2
+    cluster: build01
     context: ci/prow/verify
     decorate: true
     decoration_config:
@@ -1129,22 +1049,12 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-4.2
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=origin
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --report-credentials-file=/etc/report/credentials
         - --target=verify
         command:
         - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-origin-release-4.2.yaml
-              name: ci-operator-4.2-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -1152,12 +1062,21 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )verify,?($|\s.*)

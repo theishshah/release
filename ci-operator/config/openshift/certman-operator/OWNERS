@@ -3,18 +3,12 @@
 
 approvers:
 - c-e-brumm
-- drewandersonnz
-- jewzaam
-- jharrington22
-- mwoodson
-- rira12621
-- rogbas
-- tparikh
+- cblecker
+- dustman9000
+- yithian
 options: {}
 reviewers:
 - c-e-brumm
-- dofinn
-- fahlmant
-- jewzaam
-- mwoodson
-- tparikh
+- cblecker
+- dustman9000
+- yithian

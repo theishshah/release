@@ -4,6 +4,19 @@
 approvers:
 - abhinavdahiya
 - crawford
+- jottofar
+- lalatendumohanty
+- sdodson
 - smarterclayton
+- vrutkovs
 - wking
 options: {}
+reviewers:
+- abhinavdahiya
+- crawford
+- jottofar
+- lalatendumohanty
+- sdodson
+- smarterclayton
+- vrutkovs
+- wking

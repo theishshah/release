@@ -3,6 +3,10 @@ base_images:
     name: "4.2"
     namespace: ocp
     tag: base
+  openshift_release_golang-1.12:
+    name: release
+    namespace: openshift
+    tag: golang-1.12
 build_root:
   image_stream_tag:
     name: release
@@ -12,14 +16,16 @@ canonical_go_repository: k8s.io/kube-state-metrics
 images:
 - dockerfile_path: Dockerfile.ocp
   from: base
+  inputs:
+    openshift_release_golang-1.12:
+      as:
+      - registry.svc.ci.openshift.org/openshift/release:golang-1.12
   to: kube-state-metrics
 promotion:
   name: "4.2"
   namespace: ocp
 resources:
   '*':
-    limits:
-      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -28,6 +34,10 @@ tag_specification:
   namespace: ocp
 tests:
 - as: e2e-aws
-  commands: TEST_SUITE=openshift/conformance/parallel run-tests
-  openshift_installer:
+  steps:
     cluster_profile: aws
+    workflow: openshift-e2e-aws
+zz_generated_metadata:
+  branch: release-4.2
+  org: openshift
+  repo: kube-state-metrics

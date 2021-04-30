@@ -1,20 +1,8 @@
-base_images:
-  base:
-    name: "4.3"
-    namespace: ocp
-    tag: base
 build_root:
-  image_stream_tag:
-    name: release
-    namespace: openshift
-    tag: golang-1.12
+  from_repository: true
 images:
 - dockerfile_path: build/Dockerfile
-  from: base
-  to: managed-velero-operator
-promotion:
-  name: "4.3"
-  namespace: ocp
+  to: unused
 resources:
   '*':
     limits:
@@ -22,18 +10,39 @@ resources:
     requests:
       cpu: 100m
       memory: 200Mi
-tag_specification:
-  name: "4.3"
-  namespace: ocp
 tests:
-- as: verify
+- as: coverage
   commands: |
-    curl -sfL https://github.com/golangci/golangci-lint/releases/download/v1.17.1/golangci-lint-1.17.1-linux-amd64.tar.gz | tar -C /go/bin -zx --strip-components=1 golangci-lint-1.17.1-linux-amd64/golangci-lint
-    GOPROXY=https://proxy.golang.org make verify
+    export CODECOV_TOKEN=$(cat /tmp/secret/CODECOV_TOKEN)
+    make coverage
+  container:
+    from: src
+  secret:
+    mount_path: /tmp/secret
+    name: managed-velero-operator-codecov-token
+- as: publish-coverage
+  commands: |
+    export CODECOV_TOKEN=$(cat /tmp/secret/CODECOV_TOKEN)
+    make coverage
+  container:
+    from: src
+  postsubmit: true
+  secret:
+    mount_path: /tmp/secret
+    name: managed-velero-operator-codecov-token
+- as: lint
+  commands: make lint
   container:
     from: src
 - as: test
-  commands: |
-    make test
+  commands: make test
   container:
     from: src
+- as: validate
+  commands: make validate
+  container:
+    from: src
+zz_generated_metadata:
+  branch: master
+  org: openshift
+  repo: managed-velero-operator

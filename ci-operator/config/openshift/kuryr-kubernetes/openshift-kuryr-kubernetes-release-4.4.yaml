@@ -30,14 +30,12 @@ promotion:
 raw_steps:
 - pipeline_image_cache_step:
     commands: |
-      curl http://base-4-3-rhel8.ocp.svc > /etc/yum.repos.d/base-4-3-rhel8.repo
-      curl http://base-openstack-4-3.ocp.svc > /etc/yum.repos.d/base-openstack-4-3.repo
+      curl http://base-4-4-rhel8.ocp.svc > /etc/yum.repos.d/base-4-4-rhel8.repo
+      curl http://openstack-beta-4-4.ocp.svc > /etc/yum.repos.d/openstack-beta-4-4.repo
     from: rpm
     to: rpm-os
 resources:
   '*':
-    limits:
-      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -48,10 +46,14 @@ tag_specification:
   namespace: ocp
 tests:
 - as: unit
-  commands: tox -e py3
+  commands: HOME=`dirname .` tox -e py3
   container:
     from: kuryr-tester
 - as: verify
-  commands: tox -e pep8
+  commands: HOME=`dirname .` tox -e pep8
   container:
     from: kuryr-tester
+zz_generated_metadata:
+  branch: release-4.4
+  org: openshift
+  repo: kuryr-kubernetes

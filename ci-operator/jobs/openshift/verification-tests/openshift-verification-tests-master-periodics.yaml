@@ -1,40 +1,43 @@
 periodics:
 - agent: kubernetes
+  cluster: build01
   decorate: true
+  extra_refs:
+  - base_ref: master
+    org: openshift
+    repo: verification-tests
   interval: 24h
   name: verification-tests-context
   spec:
     containers:
     - args:
-      - --artifact-dir=$(ARTIFACTS)
+      - --git-ref=openshift/verification-tests@master
       - --give-pr-author-access-to-namespace=true
+      - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+      - --repo=verification-tests
       - --secret-dir=/usr/local/test-e2e-cluster-profile
       - --target=test-e2e
       - --template=/usr/local/test-e2e
-      - --git-ref=openshift/verification-tests@master
+      - --gcs-upload-secret=/secrets/gcs/service-account.json
+      - --lease-server-credentials-file=/etc/boskos/credentials
       command:
       - ci-operator
       env:
+      - name: BUSHSLICER_DEFAULT_ENVIRONMENT
+        value: ose
       - name: CLUSTER_TYPE
         value: aws
-      - name: CONFIG_SPEC
-        valueFrom:
-          configMapKeyRef:
-            key: openshift-verification-tests-master.yaml
-            name: ci-operator-master-configs
       - name: JOB_NAME_SAFE
         value: test-e2e
+      - name: OPENSHIFT_ENV_OSE_API_PORT
+        value: "6443"
+      - name: OPENSHIFT_ENV_OSE_HOSTS
+        value: master:etcd:node
+      - name: OPENSHIFT_ENV_OSE_USER_MANAGER_USERS
+        value: test1:test1
       - name: TEST_COMMAND
         value: /usr/bin/scl enable rh-git29 rh-ror50 -- cucumber --name "Could not
           create any context in non-existent project"
-      - name: BUSHSLICER_DEFAULT_ENVIRONMENT
-        value: ose
-      - name: OPENSHIFT_ENV_OSE_USER_MANAGER_USERS
-        value: test1:test1
-      - name: OPENSHIFT_ENV_OSE_HOSTS
-        value: master:etcd:node
-      - name: OPENSHIFT_ENV_OSE_API_PORT
-        value: "6443"
       image: ci-operator:latest
       imagePullPolicy: Always
       name: ""
@@ -42,13 +45,28 @@ periodics:
         requests:
           cpu: 10m
       volumeMounts:
+      - mountPath: /etc/boskos
+        name: boskos
+        readOnly: true
       - mountPath: /usr/local/test-e2e-cluster-profile
         name: cluster-profile
+      - mountPath: /secrets/gcs
+        name: gcs-credentials
+        readOnly: true
       - mountPath: /usr/local/test-e2e
         name: job-definition
         subPath: cluster-launch-installer-src.yaml
+      - mountPath: /etc/pull-secret
+        name: pull-secret
+        readOnly: true
     serviceAccountName: ci-operator
     volumes:
+    - name: boskos
+      secret:
+        items:
+        - key: credentials
+          path: credentials
+        secretName: boskos-credentials
     - name: cluster-profile
       projected:
         sources:
@@ -57,3 +75,6 @@ periodics:
     - configMap:
         name: prow-job-cluster-launch-installer-src
       name: job-definition
+    - name: pull-secret
+      secret:
+        secretName: registry-pull-credentials

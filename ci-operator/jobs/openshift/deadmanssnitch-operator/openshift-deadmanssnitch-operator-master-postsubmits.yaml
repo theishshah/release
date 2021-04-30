@@ -3,32 +3,22 @@ postsubmits:
   - agent: kubernetes
     branches:
     - ^master$
+    cluster: build02
     decorate: true
-    decoration_config:
-      skip_cloning: true
     labels:
       ci-operator.openshift.io/prowgen-controlled: "true"
-    name: branch-ci-openshift-deadmanssnitch-operator-master-images
+    max_concurrency: 1
+    name: branch-ci-openshift-deadmanssnitch-operator-master-publish-coverage
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=master
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --promote
-        - --repo=deadmanssnitch-operator
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
-        - --target=[images]
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --report-credentials-file=/etc/report/credentials
+        - --secret-dir=/secrets/deadmanssnitch-operator-codecov-token
+        - --target=publish-coverage
         command:
         - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-deadmanssnitch-operator-master.yaml
-              name: ci-operator-master-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -36,11 +26,26 @@ postsubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/deadmanssnitch-operator-codecov-token
+          name: deadmanssnitch-operator-codecov-token
+          readOnly: true
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
-      - name: sentry-dsn
+      - name: deadmanssnitch-operator-codecov-token
         secret:
-          secretName: sentry-dsn
+          secretName: deadmanssnitch-operator-codecov-token
+      - name: pull-secret
+        secret:
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator

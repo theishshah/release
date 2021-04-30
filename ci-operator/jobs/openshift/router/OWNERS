@@ -2,19 +2,22 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
+- candita
+- frobware
 - ironcladlou
 - knobunc
 - miciah
-- pravisankar
-- ramr
+- rfredette
+- sgreene570
 - smarterclayton
 options: {}
 reviewers:
+- candita
 - danehans
 - frobware
 - ironcladlou
 - knobunc
 - miciah
-- pravisankar
-- ramr
+- rfredette
+- sgreene570
 - smarterclayton

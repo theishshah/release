@@ -10,8 +10,6 @@ build_root:
     tag: golang-1.12
 resources:
   '*':
-    limits:
-      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -24,3 +22,7 @@ tests:
   commands: make build-coredns
   container:
     from: src
+zz_generated_metadata:
+  branch: release-4.2
+  org: openshift
+  repo: coredns-mdns

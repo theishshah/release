@@ -7,7 +7,7 @@ build_root:
   image_stream_tag:
     name: release
     namespace: openshift
-    tag: golang-1.12
+    tag: golang-1.13
 images:
 - from: base
   to: prom-label-proxy
@@ -16,8 +16,6 @@ promotion:
   namespace: ocp
 resources:
   '*':
-    limits:
-      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -25,7 +23,19 @@ tag_specification:
   name: "4.4"
   namespace: ocp
 tests:
+- as: vendor
+  commands: GO111MODULE=on make vendor && git diff --exit-code
+  container:
+    from: src
+- as: unit
+  commands: make test
+  container:
+    from: src
 - as: e2e-aws
-  commands: TEST_SUITE=openshift/conformance/parallel run-tests
-  openshift_installer:
+  steps:
     cluster_profile: aws
+    workflow: openshift-e2e-aws
+zz_generated_metadata:
+  branch: release-4.4
+  org: openshift
+  repo: prom-label-proxy

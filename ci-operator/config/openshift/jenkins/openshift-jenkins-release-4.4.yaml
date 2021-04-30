@@ -46,8 +46,6 @@ promotion:
   namespace: ocp
 resources:
   '*':
-    limits:
-      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -56,10 +54,14 @@ tag_specification:
   namespace: ocp
 tests:
 - as: e2e-aws
-  commands: TEST_SUITE=openshift/conformance/parallel run-tests
-  openshift_installer:
+  steps:
     cluster_profile: aws
+    workflow: openshift-e2e-aws
 - as: e2e-aws-jenkins
-  commands: TEST_SUITE=openshift/jenkins-e2e run-tests
-  openshift_installer:
+  steps:
     cluster_profile: aws
+    workflow: openshift-e2e-aws-jenkins
+zz_generated_metadata:
+  branch: release-4.4
+  org: openshift
+  repo: jenkins

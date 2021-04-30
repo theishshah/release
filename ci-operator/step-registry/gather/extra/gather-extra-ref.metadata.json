@@ -1,0 +1,16 @@
+{
+	"path": "gather/extra/gather-extra-ref.yaml",
+	"owners": {
+		"approvers": [
+			"smarterclayton",
+			"wking",
+			"vrutkovs",
+			"abhinavdahiya",
+			"deads2k",
+			"crawford",
+			"ewolinetz",
+			"csrwng",
+			"staebler"
+		]
+	}
+}

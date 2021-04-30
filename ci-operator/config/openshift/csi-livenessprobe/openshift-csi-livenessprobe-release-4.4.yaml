@@ -3,28 +3,29 @@ base_images:
     name: "4.4"
     namespace: ocp
     tag: base
+  openshift_release_golang-1.13:
+    name: release
+    namespace: openshift
+    tag: golang-1.13
 build_root:
   image_stream_tag:
     name: release
     namespace: openshift
-    tag: golang-1.12
+    tag: golang-1.13
 canonical_go_repository: github.com/kubernetes-csi/livenessprobe
 images:
 - dockerfile_path: Dockerfile.openshift
   from: base
   inputs:
-    root:
+    openshift_release_golang-1.13:
       as:
-      - "0"
-      paths: null
+      - registry.svc.ci.openshift.org/openshift/release:golang-1.13
   to: csi-livenessprobe
 promotion:
   name: "4.4"
   namespace: ocp
 resources:
   '*':
-    limits:
-      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -36,3 +37,11 @@ tests:
   commands: make test
   container:
     from: src
+- as: e2e-aws-csi
+  steps:
+    cluster_profile: aws
+    workflow: openshift-e2e-aws-csi-install
+zz_generated_metadata:
+  branch: release-4.4
+  org: openshift
+  repo: csi-livenessprobe

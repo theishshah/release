@@ -1,12 +1,10 @@
 build_root:
   image_stream_tag:
-    namespace: openshift
     name: release
+    namespace: openshift
     tag: golang-1.12
 resources:
   '*':
-    limits:
-      memory: 4Gi
     requests:
       cpu: 200m
       memory: 200Mi
@@ -19,3 +17,7 @@ tests:
   commands: make verify-deepcopy
   container:
     from: src
+zz_generated_metadata:
+  branch: master
+  org: openshift
+  repo: custom-resource-status

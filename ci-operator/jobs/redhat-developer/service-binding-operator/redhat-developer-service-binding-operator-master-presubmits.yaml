@@ -4,42 +4,29 @@ presubmits:
     always_run: true
     branches:
     - master
-    context: ci/prow/e2e
+    cluster: build01
+    context: ci/prow/4.6-acceptance
     decorate: true
     decoration_config:
       skip_cloning: true
     labels:
       ci-operator.openshift.io/prowgen-controlled: "true"
+      ci-operator.openshift.io/variant: "4.6"
       pj-rehearse.openshift.io/can-be-rehearsed: "true"
-    name: pull-ci-redhat-developer-service-binding-operator-master-e2e
-    rerun_command: /test e2e
+    name: pull-ci-redhat-developer-service-binding-operator-master-4.6-acceptance
+    rerun_command: /test 4.6-acceptance
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=master
-        - --give-pr-author-access-to-namespace=true
-        - --org=redhat-developer
-        - --repo=service-binding-operator
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --secret-dir=/usr/local/e2e-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
-        - --target=e2e
-        - --template=/usr/local/e2e
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
+        - --secret-dir=/usr/local/acceptance-cluster-profile
+        - --target=acceptance
+        - --variant=4.6
         command:
         - ci-operator
-        env:
-        - name: CLUSTER_TYPE
-          value: aws
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: redhat-developer-service-binding-operator-master.yaml
-              name: ci-operator-master-configs
-        - name: JOB_NAME_SAFE
-          value: e2e
-        - name: TEST_COMMAND
-          value: VERBOSE=2 LOGS_DIR=/tmp/artifacts make -k test-e2e parse-test-e2e-operator-log
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -47,60 +34,67 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /usr/local/e2e-cluster-profile
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
+        - mountPath: /usr/local/acceptance-cluster-profile
           name: cluster-profile
-        - mountPath: /usr/local/e2e
-          name: job-definition
-          subPath: cluster-launch-installer-src.yaml
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
           - secret:
               name: cluster-secrets-aws
-      - configMap:
-          name: prow-job-cluster-launch-installer-src
-        name: job-definition
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
-    trigger: (?m)^/test( | .* )e2e,?($|\s.*)
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )4.6-acceptance,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - master
-    context: ci/prow/images
+    cluster: build01
+    context: ci/prow/4.7-acceptance
     decorate: true
     decoration_config:
       skip_cloning: true
     labels:
       ci-operator.openshift.io/prowgen-controlled: "true"
+      ci-operator.openshift.io/variant: "4.7"
       pj-rehearse.openshift.io/can-be-rehearsed: "true"
-    name: pull-ci-redhat-developer-service-binding-operator-master-images
-    rerun_command: /test images
+    name: pull-ci-redhat-developer-service-binding-operator-master-4.7-acceptance
+    rerun_command: /test 4.7-acceptance
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=master
-        - --give-pr-author-access-to-namespace=true
-        - --org=redhat-developer
-        - --repo=service-binding-operator
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
-        - --target=[images]
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
+        - --secret-dir=/usr/local/acceptance-cluster-profile
+        - --target=acceptance
+        - --variant=4.7
         command:
         - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: redhat-developer-service-binding-operator-master.yaml
-              name: ci-operator-master-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -108,115 +102,37 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
+        - mountPath: /usr/local/acceptance-cluster-profile
+          name: cluster-profile
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
-      - name: sentry-dsn
+      - name: boskos
         secret:
-          secretName: sentry-dsn
-    trigger: (?m)^/test( | .* )images,?($|\s.*)
-  - agent: kubernetes
-    always_run: true
-    branches:
-    - master
-    context: ci/prow/lint
-    decorate: true
-    decoration_config:
-      skip_cloning: true
-    labels:
-      ci-operator.openshift.io/prowgen-controlled: "true"
-      pj-rehearse.openshift.io/can-be-rehearsed: "true"
-    name: pull-ci-redhat-developer-service-binding-operator-master-lint
-    rerun_command: /test lint
-    spec:
-      containers:
-      - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=master
-        - --give-pr-author-access-to-namespace=true
-        - --org=redhat-developer
-        - --repo=service-binding-operator
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
-        - --target=lint
-        command:
-        - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: redhat-developer-service-binding-operator-master.yaml
-              name: ci-operator-master-configs
-        image: ci-operator:latest
-        imagePullPolicy: Always
-        name: ""
-        resources:
-          requests:
-            cpu: 10m
-        volumeMounts:
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
-          readOnly: true
-      serviceAccountName: ci-operator
-      volumes:
-      - name: sentry-dsn
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
+      - name: cluster-profile
+        projected:
+          sources:
+          - secret:
+              name: cluster-secrets-aws
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
-    trigger: (?m)^/test( | .* )lint,?($|\s.*)
-  - agent: kubernetes
-    always_run: true
-    branches:
-    - master
-    context: ci/prow/unit
-    decorate: true
-    decoration_config:
-      skip_cloning: true
-    labels:
-      ci-operator.openshift.io/prowgen-controlled: "true"
-      pj-rehearse.openshift.io/can-be-rehearsed: "true"
-    name: pull-ci-redhat-developer-service-binding-operator-master-unit
-    rerun_command: /test unit
-    spec:
-      containers:
-      - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=master
-        - --give-pr-author-access-to-namespace=true
-        - --org=redhat-developer
-        - --repo=service-binding-operator
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --secret-dir=/usr/local/redhat-developer-service-binding-operator-codecov-token
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
-        - --target=unit
-        command:
-        - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: redhat-developer-service-binding-operator-master.yaml
-              name: ci-operator-master-configs
-        image: ci-operator:latest
-        imagePullPolicy: Always
-        name: ""
-        resources:
-          requests:
-            cpu: 10m
-        volumeMounts:
-        - mountPath: /usr/local/redhat-developer-service-binding-operator-codecov-token
-          name: redhat-developer-service-binding-operator-codecov-token
-          readOnly: true
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
-          readOnly: true
-      serviceAccountName: ci-operator
-      volumes:
-      - name: redhat-developer-service-binding-operator-codecov-token
+          secretName: registry-pull-credentials
+      - name: result-aggregator
         secret:
-          secretName: redhat-developer-service-binding-operator-codecov-token
-      - name: sentry-dsn
-        secret:
-          secretName: sentry-dsn
-    trigger: (?m)^/test( | .* )unit,?($|\s.*)
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )4.7-acceptance,?($|\s.*)

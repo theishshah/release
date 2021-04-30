@@ -4,6 +4,11 @@ base_images:
     namespace: openshift
     tag: base
 binary_build_commands: make build
+build_root:
+  image_stream_tag:
+    name: release
+    namespace: openshift
+    tag: golang-1.10
 images:
 - from: base
   inputs:
@@ -28,19 +33,12 @@ images:
   to: package-server
 resources:
   '*':
-    limits:
-      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
 tag_specification:
   name: origin-v3.11
   namespace: openshift
-build_root:
-  image_stream_tag:
-    name: release
-    namespace: openshift
-    tag: golang-1.10
 tests:
 - as: verify
   commands: make verify-codegen verify-catalog
@@ -54,3 +52,7 @@ tests:
   commands: make schema-check
   container:
     from: src
+zz_generated_metadata:
+  branch: release-3.11
+  org: operator-framework
+  repo: operator-lifecycle-manager

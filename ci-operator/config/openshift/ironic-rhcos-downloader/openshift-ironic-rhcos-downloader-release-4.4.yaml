@@ -11,17 +11,19 @@ build_root:
 images:
 - dockerfile_path: Dockerfile.ocp
   from: base
-  to: ironic-rhcos-downloader
+  to: ironic-machine-os-downloader
 promotion:
   name: "4.4"
   namespace: ocp
 resources:
   '*':
-    limits:
-      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
 tag_specification:
   name: "4.4"
   namespace: ocp
+zz_generated_metadata:
+  branch: release-4.4
+  org: openshift
+  repo: ironic-rhcos-downloader

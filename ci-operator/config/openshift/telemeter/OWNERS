@@ -3,18 +3,16 @@
 
 approvers:
 - aditya-konarde
-- brancz
-- jakedt
+- arilivigni
+- bwplotka
 - jfchevrette
 - jmelis
-- jzelinskie
 - kakkoyun
 - lilic
 - maorfr
-- metalmatze
-- mmclanerh
 - paulfantom
 - pbergene
+- rporres
 - rrati
 - s-urbaniak
 - skryzhny
@@ -23,18 +21,16 @@ approvers:
 options: {}
 reviewers:
 - aditya-konarde
-- brancz
-- jakedt
+- arilivigni
+- bwplotka
 - jfchevrette
 - jmelis
-- jzelinskie
 - kakkoyun
 - lilic
 - maorfr
-- metalmatze
-- mmclanerh
 - paulfantom
 - pbergene
+- rporres
 - rrati
 - s-urbaniak
 - skryzhny

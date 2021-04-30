@@ -5,8 +5,6 @@ build_root:
     tag: golang-1.12
 resources:
   '*':
-    limits:
-      memory: 6Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -19,3 +17,7 @@ tests:
   commands: make check-services
   container:
     from: src
+zz_generated_metadata:
+  branch: master
+  org: openshift
+  repo: release

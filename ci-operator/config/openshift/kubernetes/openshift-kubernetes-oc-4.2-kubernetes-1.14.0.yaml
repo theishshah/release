@@ -6,8 +6,6 @@ build_root:
     tag: golang-1.12
 resources:
   '*':
-    limits:
-      memory: 12Gi
     requests:
       cpu: "3"
       memory: 12Gi
@@ -17,10 +15,12 @@ tests:
     make verify -k
   container:
     from: bin
-- artifact_dir: /tmp/artifacts
-  as: unit
+- as: unit
   commands: |
-    mkdir -p /tmp/artifacts
-    make test KUBE_JUNIT_REPORT_DIR=/tmp/artifacts/
+    make test KUBE_JUNIT_REPORT_DIR=${ARTIFACT_DIR}/
   container:
     from: bin
+zz_generated_metadata:
+  branch: oc-4.2-kubernetes-1.14.0
+  org: openshift
+  repo: kubernetes

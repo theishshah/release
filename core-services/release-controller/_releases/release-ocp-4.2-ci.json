@@ -4,18 +4,29 @@
   "message": "This release contains CI image builds of all code in release-4.2 branches, and is updated each time someone merges.",
   "mirrorPrefix": "4.2",
   "expires":"72h",
-  "maxUnreadyReleases": 4,
+  "maxUnreadyReleases": 2,
   "minCreationIntervalSeconds": 1800,
   "pullSecretName": "source",
   "publish":{
+    "mirror-to-origin":{
+      "imageStreamRef":{
+        "namespace": "origin",
+        "name": "4.2",
+        "excludeTags": [
+          "machine-os-content",
+          "ironic-ipa-downloader",
+          "ironic-machine-os-downloader"
+        ]
+      }
+    },
     "tag":{"tagRef":{"name":"4.2-ci"}}
   },
   "verify":{
     "aws":{
-      "prowJob":{"name":"release-openshift-origin-installer-e2e-aws-4.2"}
+      "prowJob":{"name":"periodic-ci-openshift-release-master-ci-4.2-e2e-aws"}
     },
     "aws-serial":{
-      "prowJob":{"name":"release-openshift-origin-installer-e2e-aws-serial-4.2"}
+      "prowJob":{"name":"periodic-ci-openshift-release-master-ci-4.2-e2e-aws-serial"}
     },
     "upgrade":{
       "upgrade":true,
@@ -27,6 +38,35 @@
       "upgradeFrom": "PreviousMinor",
       "optional":true,
       "prowJob":{"name":"release-openshift-origin-installer-e2e-aws-upgrade"}
+    }
+  },
+  "periodic":{
+    "upgrade-aws-minor":{
+      "interval":"4h",
+      "upgrade":true,
+      "upgradeFrom":"PreviousMinor",
+      "prowJob":{"name":"release-openshift-origin-installer-e2e-aws-upgrade-4.1-stable-to-4.2-ci"}
+    },
+    "upgrade-aws-rollback-minor":{
+      "interval":"12h",
+      "upgrade":true,
+      "upgradeFrom":"PreviousMinor",
+      "prowJob":{"name":"release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.1-to-4.2"}
+    },
+    "upgrade-aws-rollback":{
+      "interval":"12h",
+      "upgrade":true,
+      "prowJob":{"name":"release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.2"}
+    },
+    "upgrade-gcp":{
+      "interval":"12h",
+      "upgrade":true,
+      "prowJob":{"name":"release-openshift-origin-installer-e2e-gcp-upgrade-4.2"}
+    },
+    "upgrade-azure":{
+      "interval":"12h",
+      "upgrade":true,
+      "prowJob":{"name":"release-openshift-origin-installer-e2e-azure-upgrade-4.2"}
     }
   }
 }

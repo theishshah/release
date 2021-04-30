@@ -3,6 +3,7 @@ postsubmits:
   - agent: kubernetes
     branches:
     - ^master$
+    cluster: build02
     decorate: true
     decoration_config:
       skip_cloning: true
@@ -10,18 +11,13 @@ postsubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
         - --give-pr-author-access-to-namespace=true
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --repo=toolchain-common
         - --target=build
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
         command:
         - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: codeready-toolchain-toolchain-common-master.yaml
-              name: ci-operator-master-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -29,17 +25,21 @@ postsubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
   - agent: kubernetes
     branches:
     - ^master$
+    cluster: build02
     decorate: true
     decoration_config:
       skip_cloning: true
@@ -47,18 +47,13 @@ postsubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
         - --give-pr-author-access-to-namespace=true
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --repo=toolchain-common
         - --target=test
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
         command:
         - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: codeready-toolchain-toolchain-common-master.yaml
-              name: ci-operator-master-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -66,11 +61,14 @@ postsubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials

@@ -1,0 +1,59 @@
+base_images:
+  base:
+    name: ubi
+    namespace: ocp
+    tag: "8"
+  openshift_release_golang-1.13:
+    name: release
+    namespace: openshift
+    tag: golang-1.13
+  openshift_release_golang-1.14:
+    name: release
+    namespace: openshift
+    tag: golang-1.14
+build_root:
+  image_stream_tag:
+    name: release
+    namespace: openshift
+    tag: golang-1.14
+images:
+- dockerfile_path: Dockerfile
+  from: base
+  to: route-monitor-operator
+resources:
+  '*':
+    limits:
+      memory: 4Gi
+    requests:
+      cpu: 100m
+      memory: 200Mi
+tag_specification:
+  name: "4.7"
+  namespace: ocp
+tests:
+- as: generate
+  commands: make generate --always-make && git diff --exit-code
+  container:
+    from: src
+- as: unit
+  commands: make test
+  container:
+    from: src
+- as: integration-aws
+  steps:
+    cluster_profile: aws
+    env:
+      COMPUTE_NODE_TYPE: m5.4xlarge
+    test:
+    - as: test
+      cli: latest
+      commands: make test-integration
+      from: src
+      resources:
+        requests:
+          cpu: 100m
+    workflow: ipi-aws
+zz_generated_metadata:
+  branch: master
+  org: openshift
+  repo: route-monitor-operator

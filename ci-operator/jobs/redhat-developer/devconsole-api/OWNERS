@@ -4,21 +4,16 @@
 approvers:
 - alexeykazakov
 - baijum
-- corinnekrych
-- dipak-pawar
 - matousjobanek
 - sbose78
 - sbryzak
 - tinakurian
 options: {}
 reviewers:
-- akashshinde
 - alexeykazakov
 - avni-sharma
 - baijum
-- corinnekrych
 - dhritishikhar
-- dipak-pawar
 - ldimaggi
 - matousjobanek
 - michaelkleinhenz

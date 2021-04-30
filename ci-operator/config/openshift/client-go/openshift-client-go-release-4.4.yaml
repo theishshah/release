@@ -2,14 +2,12 @@ build_root:
   image_stream_tag:
     name: release
     namespace: openshift
-    tag: golang-1.12
+    tag: golang-1.13
 promotion:
   name: "4.4"
   namespace: ocp
 resources:
   '*':
-    limits:
-      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -21,3 +19,7 @@ tests:
   commands: make generate; go build ./...; make verify
   container:
     from: src
+zz_generated_metadata:
+  branch: release-4.4
+  org: openshift
+  repo: client-go

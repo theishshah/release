@@ -28,4 +28,7 @@ resources:
 tag_specification:
   name: origin-v3.11
   namespace: openshift
-tests: []
+zz_generated_metadata:
+  branch: master
+  org: openshift
+  repo: openshift-azure

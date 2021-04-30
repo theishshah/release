@@ -1,34 +1,31 @@
 base_images:
   os:
     name: centos
-    namespace: openshift
-    tag: '7'
+    namespace: origin
+    tag: "8"
 binary_build_commands: make
+build_root:
+  image_stream_tag:
+    name: release
+    namespace: openshift
+    tag: golang-1.15
 images:
 - from: os
-  inputs:
-    root:
-      as:
-      - '0'
   to: release-controller
 promotion:
   namespace: ci
   tag: latest
 resources:
   '*':
-    limits:
-      memory: 6Gi
     requests:
       cpu: 100m
       memory: 200Mi
-build_root:
-  image_stream_tag:
-    name: release
-    namespace: openshift
-    tag: golang-1.13
 tests:
-- artifact_dir: /tmp/artifacts
-  as: unit
-  commands: ARTIFACT_DIR=/tmp/artifacts make test
+- as: unit
+  commands: make test
   container:
     from: src
+zz_generated_metadata:
+  branch: master
+  org: openshift
+  repo: release-controller

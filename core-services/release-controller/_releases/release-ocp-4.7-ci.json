@@ -1,0 +1,128 @@
+{
+  "name":"4.7.0-0.ci",
+  "to": "release",
+  "message": "This release contains CI image builds of all code in release-4.7 (master) branches, and is updated each time someone merges.",
+  "mirrorPrefix": "4.7",
+  "expires":"72h",
+  "maxUnreadyReleases": 2,
+  "minCreationIntervalSeconds": 1800,
+  "pullSecretName": "source",
+  "publish":{
+    "mirror-to-origin":{
+      "imageStreamRef":{
+        "namespace": "origin",
+        "name": "4.7",
+        "excludeTags": [
+          "machine-os-content",
+          "machine-config-operator",
+          "machine-config-operator-rpms",
+          "installer",
+          "installer-artifacts",
+          "baremetal-installer",
+          "openstack-installer",
+          "upi-installer",
+          "libvirt-installer",
+          "ovirt-installer",
+          "sig-storage-local-static-provisioner",
+          "ironic",
+          "ironic-inspector",
+          "ironic-ipa-downloader",
+          "cluster-samples-operator",
+          "operator-marketplace",
+          "cluster-update-keys"
+        ]
+      }
+    },
+    "tag":{"tagRef":{"name":"4.7-ci"}}
+  },
+  "verify":{
+    "gcp":{
+      "prowJob":{"name":"periodic-ci-openshift-release-master-ci-4.7-e2e-gcp"}
+    },
+    "aws-serial":{
+      "prowJob":{"name":"periodic-ci-openshift-release-master-ci-4.7-e2e-aws-serial"}
+    },
+    "upgrade":{
+      "upgrade":true,
+      "optional":true,
+      "prowJob":{"name":"periodic-ci-openshift-release-master-ci-4.7-e2e-gcp-upgrade"}
+    },
+    "upgrade-minor":{
+      "upgrade":true,
+      "upgradeFrom": "PreviousMinor",
+      "optional":false,
+      "prowJob":{"name":"periodic-ci-openshift-release-master-ci-4.7-upgrade-from-stable-4.6-e2e-aws-upgrade"}
+    },
+    "upgrade-minor-aws-ovn":{
+      "upgrade":true,
+      "upgradeFrom": "PreviousMinor",
+      "optional":true,
+      "prowJob":{"name":"periodic-ci-openshift-release-master-ci-4.7-upgrade-from-stable-4.6-e2e-aws-ovn-upgrade"}
+    }
+  },
+  "periodic":{
+    "upgrade-aws-minor":{
+      "interval":"6h",
+      "upgrade":true,
+      "upgradeFrom": "PreviousMinor",
+      "prowJob":{"name":"periodic-ci-openshift-release-master-ci-4.7-upgrade-from-stable-4.6-e2e-aws-upgrade"}
+    },
+    "upgrade-gcp":{
+      "interval":"6h",
+      "upgrade":true,
+      "prowJob":{"name":"periodic-ci-openshift-release-master-ci-4.7-e2e-gcp-upgrade"}
+    },
+    "upgrade-rollback-minor":{
+      "interval":"24h",
+      "upgrade":true,
+      "upgradeFrom": "PreviousMinor",
+      "prowJob":{"name":"periodic-ci-openshift-release-master-ci-4.7-upgrade-from-stable-4.6-e2e-aws-upgrade-rollback"}
+    },
+    "upgrade-rollback":{
+      "interval":"24h",
+      "upgrade":true,
+      "prowJob":{"name":"periodic-ci-openshift-release-master-ci-4.7-e2e-aws-upgrade-rollback"}
+    },
+    "upgrade-aws-ovn-minor":{
+      "interval":"2h",
+      "upgrade":true,
+      "upgradeFrom": "PreviousMinor",
+      "prowJob":{"name":"periodic-ci-openshift-release-master-ci-4.7-upgrade-from-stable-4.6-e2e-aws-ovn-upgrade"}
+    },
+    "upgrade-azure":{
+      "interval":"6h",
+      "upgrade":true,
+      "prowJob":{"name":"periodic-ci-openshift-release-master-ci-4.7-e2e-azure-upgrade"}
+    },
+    "upgrade-gcp-minor":{
+      "interval":"6h",
+      "upgrade":true,
+      "upgradeFrom": "PreviousMinor",
+      "prowJob":{"name":"periodic-ci-openshift-release-master-ci-4.7-upgrade-from-stable-4.6-e2e-gcp-upgrade"}
+    },
+    "upgrade-gcp-ovn-minor":{
+      "interval":"6h",
+      "upgrade":true,
+      "upgradeFrom": "PreviousMinor",
+      "prowJob":{"name":"periodic-ci-openshift-release-master-ci-4.7-upgrade-from-stable-4.6-e2e-gcp-ovn-upgrade"}
+    },
+    "upgrade-azure-minor":{
+      "interval":"6h",
+      "upgrade":true,
+      "upgradeFrom": "PreviousMinor",
+      "prowJob":{"name":"periodic-ci-openshift-release-master-ci-4.7-upgrade-from-stable-4.6-e2e-azure-upgrade"}
+    },
+    "upgrade-azure-ovn-minor":{
+      "interval":"6h",
+      "upgrade":true,
+      "upgradeFrom": "PreviousMinor",
+      "prowJob":{"name":"periodic-ci-openshift-release-master-ci-4.7-upgrade-from-stable-4.6-e2e-azure-ovn-upgrade"}
+    },
+    "upgrade-ovirt-minor":{
+      "cron":"0 3,16 * * *",
+      "upgrade":true,
+      "upgradeFrom": "PreviousMinor",
+      "prowJob":{"name":"periodic-ci-openshift-release-master-ci-4.7-upgrade-from-stable-4.6-e2e-ovirt-upgrade"}
+    }
+  }
+}

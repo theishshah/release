@@ -2,13 +2,15 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
-- brancz
-- lilic
+- dgrisonnet
+- kakkoyun
 - paulfantom
 - s-urbaniak
+- simonpasquier
 options: {}
 reviewers:
-- brancz
-- lilic
+- dgrisonnet
+- kakkoyun
 - paulfantom
 - s-urbaniak
+- simonpasquier

@@ -1,0 +1,33 @@
+build_root:
+  image_stream_tag:
+    name: release
+    namespace: openshift
+    tag: golang-1.12
+resources:
+  '*':
+    requests:
+      cpu: 100m
+      memory: 200Mi
+tag_specification:
+  name: "4.3"
+  namespace: ocp
+tests:
+- as: etcd-azure-perf-test-daily
+  cron: 0 0 * * *
+  steps:
+    cluster_profile: azure4
+    test:
+    - as: test
+      cli: latest
+      commands: |
+        TEST_OUTPUT_PATH=/tmp/artifacts/etcd-azure-perf-test-daily.log
+        workloads/etcd-perf/run_etcd_tests_fromgit.sh >> ${TEST_OUTPUT_PATH}
+      from: src
+      resources:
+        requests:
+          cpu: 100m
+    workflow: ipi-azure
+zz_generated_metadata:
+  branch: master
+  org: cloud-bulldozer
+  repo: plow

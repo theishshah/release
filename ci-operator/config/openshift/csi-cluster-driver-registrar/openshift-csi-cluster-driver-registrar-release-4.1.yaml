@@ -14,8 +14,6 @@ promotion:
   namespace: ocp
 resources:
   '*':
-    limits:
-      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -27,3 +25,7 @@ tests:
   commands: make test
   container:
     from: src
+zz_generated_metadata:
+  branch: release-4.1
+  org: openshift
+  repo: csi-cluster-driver-registrar

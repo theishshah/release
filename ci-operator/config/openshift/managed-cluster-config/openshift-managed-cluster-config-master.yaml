@@ -1,27 +1,23 @@
 base_images:
   base:
-    name: "4.3"
+    name: ubi
     namespace: ocp
-    tag: base
+    tag: "8"
 build_root:
   image_stream_tag:
     name: release
     namespace: openshift
-    tag: golang-1.10
+    tag: golang-1.13
 images:
 - dockerfile_path: Dockerfile
   from: base
   to: managed-cluster-config
-promotion:
-  name: "4.3"
-  namespace: ocp
 resources:
   '*':
-    limits:
-      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
-tag_specification:
-  name: "4.3"
-  namespace: ocp
+zz_generated_metadata:
+  branch: master
+  org: openshift
+  repo: managed-cluster-config

@@ -1,47 +1,88 @@
 base_images:
   base:
-    name: "4.3"
+    name: "4.8"
     namespace: ocp
     tag: base
+  ocp_builder_rhel-8-golang-1.15-openshift-4.6:
+    name: builder
+    namespace: ocp
+    tag: rhel-8-golang-1.15-openshift-4.6
+  ocp_builder_rhel-8-golang-1.15-openshift-4.7:
+    name: builder
+    namespace: ocp
+    tag: rhel-8-golang-1.15-openshift-4.7
+  ocp_builder_rhel-8-golang-1.15-openshift-4.8:
+    name: builder
+    namespace: ocp
+    tag: rhel-8-golang-1.15-openshift-4.8
+  ocp_builder_rhel-8-golang-openshift-4.6:
+    name: builder
+    namespace: ocp
+    tag: rhel-8-golang-openshift-4.6
+  openshift_release_golang-1.14:
+    name: release
+    namespace: openshift
+    tag: golang-1.14
 binary_build_commands: make build --warn-undefined-variables
 build_root:
   image_stream_tag:
-    cluster: https://api.ci.openshift.org
     name: release
     namespace: openshift
-    tag: golang-1.12
+    tag: golang-1.14
 images:
 - dockerfile_path: images/ci/Dockerfile
   from: base
+  inputs:
+    ocp_builder_rhel-8-golang-1.15-openshift-4.8:
+      as:
+      - registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.15-openshift-4.8
   to: cluster-kube-storage-version-migrator-operator
 promotion:
-  name: "4.3"
+  name: "4.8"
   namespace: ocp
 resources:
   '*':
-    limits:
-      memory: 3Gi
     requests:
       cpu: "3"
       memory: 1Gi
 tag_specification:
-  name: "4.3"
+  name: "4.8"
   namespace: ocp
-test_binary_build_commands: make build GOFLAGS='-race' --warn-undefined-variables
+test_binary_build_commands: make build GO_BUILD_FLAGS:='-race' --warn-undefined-variables
 tests:
 - as: verify
   commands: |
     make verify -k --warn-undefined-variables
   container:
     from: bin
-- artifact_dir: /tmp/artifacts
-  as: unit
+- as: verify-deps
   commands: |
-    mkdir -p /tmp/artifacts
-    make test-unit JUNITFILE=/tmp/artifacts/unit_report.xml --warn-undefined-variables
+    make verify-deps -k --warn-undefined-variables
+  container:
+    from: src
+- as: unit
+  commands: |
+    make test-unit JUNITFILE=${ARTIFACT_DIR}/junit_report.xml --warn-undefined-variables
   container:
     from: test-bin
-- as: e2e-aws
-  commands: TEST_SUITE=openshift/conformance/parallel run-tests
-  openshift_installer:
+- as: e2e-aws-operator
+  steps:
     cluster_profile: aws
+    test:
+    - as: test
+      cli: latest
+      commands: |
+        make test-e2e JUNITFILE=${ARTIFACT_DIR}/junit_report.xml --warn-undefined-variables
+      from: src
+      resources:
+        requests:
+          cpu: 100m
+    workflow: ipi-aws
+- as: e2e-aws
+  steps:
+    cluster_profile: aws
+    workflow: openshift-e2e-aws
+zz_generated_metadata:
+  branch: master
+  org: openshift
+  repo: cluster-kube-storage-version-migrator-operator

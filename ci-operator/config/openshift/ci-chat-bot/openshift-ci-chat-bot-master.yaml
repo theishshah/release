@@ -2,22 +2,32 @@ base_images:
   base:
     name: centos
     namespace: openshift
-    tag: '7'
+    tag: "7"
+  openshift_release_golang-1.15:
+    name: release
+    namespace: openshift
+    tag: golang-1.15
+build_root:
+  image_stream_tag:
+    name: release
+    namespace: openshift
+    tag: golang-1.15
 images:
 - from: base
+  inputs:
+    openshift_release_golang-1.15:
+      as:
+      - registry.ci.openshift.org/openshift/release:golang-1.15
   to: ci-chat-bot
 promotion:
   namespace: ci
   tag: latest
 resources:
   '*':
-    limits:
-      memory: 6Gi
     requests:
       cpu: 100m
       memory: 200Mi
-build_root:
-  image_stream_tag:
-    name: release
-    namespace: openshift
-    tag: golang-1.10
+zz_generated_metadata:
+  branch: master
+  org: openshift
+  repo: ci-chat-bot

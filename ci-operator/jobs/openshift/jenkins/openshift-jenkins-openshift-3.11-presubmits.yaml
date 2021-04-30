@@ -4,6 +4,7 @@ presubmits:
     always_run: true
     branches:
     - openshift-3.11
+    cluster: build02
     context: ci/prow/e2e-gcp
     decorate: true
     name: pull-ci-openshift-jenkins-openshift-3.11-e2e-gcp
@@ -11,8 +12,10 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
         - --give-pr-author-access-to-namespace=true
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --repo=jenkins
         - --secret-dir=/usr/local/e2e-gcp-cluster-profile
         - --target=e2e-gcp
         - --template=/usr/local/e2e-gcp
@@ -21,17 +24,12 @@ presubmits:
         env:
         - name: CLUSTER_TYPE
           value: gcp
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-jenkins-openshift-3.11.yaml
-              name: ci-operator-3.x-configs
         - name: JOB_NAME_SAFE
           value: e2e-gcp
         - name: PREPARE_COMMAND
           value: tag-in-image.sh
         - name: RPM_REPO_OPENSHIFT_ORIGIN
-          value: https://rpms.svc.ci.openshift.org/openshift-origin-v3.11/
+          value: https://artifacts-rpms-openshift-origin-ci-rpms.apps.ci.l2s4.p1.openshiftapps.com/openshift-origin-v3.11/
         - name: TEST_COMMAND
           value: TEST_FOCUS='openshift pipeline' TEST_PARALLELISM=2 run-tests
         image: ci-operator:latest
@@ -43,9 +41,15 @@ presubmits:
         volumeMounts:
         - mountPath: /usr/local/e2e-gcp-cluster-profile
           name: cluster-profile
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
         - mountPath: /usr/local/e2e-gcp
           name: job-definition
           subPath: cluster-launch-e2e-openshift-jenkins.yaml
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
       serviceAccountName: ci-operator
       volumes:
       - name: cluster-profile
@@ -58,11 +62,15 @@ presubmits:
       - configMap:
           name: prow-job-cluster-launch-e2e-openshift-jenkins
         name: job-definition
+      - name: pull-secret
+        secret:
+          secretName: registry-pull-credentials
     trigger: (?m)^/test( | .* )e2e-gcp,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - openshift-3.11
+    cluster: build02
     context: ci/prow/images
     decorate: true
     decoration_config:
@@ -75,22 +83,12 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=openshift-3.11
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=jenkins
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --report-credentials-file=/etc/report/credentials
         - --target=[images]
         command:
         - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-jenkins-openshift-3.11.yaml
-              name: ci-operator-3.x-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -98,12 +96,21 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )images,?($|\s.*)

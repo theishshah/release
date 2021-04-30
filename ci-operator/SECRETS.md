@@ -3,10 +3,18 @@
 This document overviews the secrets that are available and the means by which
 they should be deployed to the cluster.
 
-## Access to secrets
+There are currently two ways to manager secrets:
 
-We store secrets in bitwarden. To get access, you will need to ask in #forum-testplatform 
-on the OpenShift Slack, or open a Jira ticket to the DPTP team.
+* DPTP-managed Secrets: We store secrets in a private secret storage system: [Bitwarden](https://bitwarden.com/).
+To add new secrets to this storage please reach out to `#forum-testplatform` on Slack
+and be prepared to encrypt your data with our GPG keys. DPTP uses [ci-secret-bootstrap](../core-services/ci-secret-bootstrap)
+to populate secrets from Bitwarden to the clusters in CI-infrastructure.
+
+* Self-Managed Secrets: In order to provide custom secrets to jobs without putting the secret management
+into the hands of the Developer Productivity (Test Platform) team, it is possible
+to create the secrets in the cluster and have them automatically mirrored to be
+available for jobs. See [secret-mirroring](../core-services/secret-mirroring/README.md#self-managed-secrets)
+for details and instructions.
 
 ## Secrets Listing
 
@@ -17,15 +25,16 @@ vet that interaction for correctness.
 ### Aggregate IaaS Secrets for use in Cluster Tests
 
 A set of secrets exists that contain aggregated information for ease of mounting
-into tests that are interacting with an IaaS hosted by a cloud. The following secrets
-currently exist:
+into tests that are interacting with an IaaS hosted by a cloud.
+
+The following secrets currently exist:
 
 #### `cluster-secrets-aws`
 
 |       Key        | Description |
 | ---------------- | ----------- |
 | `.awscred`       | Credentials for the AWS EC2 API. See the [upstream credentials doc](https://docs.aws.amazon.com/cli/latest/userguide/cli-multiple-profiles.html). |
-| `pull-secret`    | Credentials for pulling OpenShift images from Quay and for authenticating to telemetry. Retrieved from [try.openshift.com](https://try.openshift.com) under the ccoleman+openshift-ci-test@redhat.com account, and has the service account token from the `ocp` namespace added with `oc registry login --to=/tmp/pull-secret -z default -n ocp`.|
+| `pull-secret`    | [See below](#pull-secret-key). |
 | `ssh-privatekey` | Private half of the SSH key, for connecting to AWS EC2 VMs. |
 | `ssh-publickey`  | Public half of the SSH key, for connecting to AWS EC2 VMs. |
 
@@ -38,7 +47,7 @@ currently exist:
 | `ssh-privatekey`  | Private half of the SSH key, for connecting to GCE VMs. |
 | `ssh-publickey`   | Public half of the SSH key, for connecting to GCE VMs. |
 | `telemeter-token` | Token to push telemetry data on CI clusters. |
-| `pull-secret`    | Credentials for pulling OpenShift images from Quay and for authenticating to telemetry. Retrieved from [try.openshift.com](https://try.openshift.com) under the ccoleman+openshift-ci-test@redhat.com account, and has the service account token from the `ocp` namespace added with `oc registry login --to=/tmp/pull-secret -z default -n ocp`.|
+| `pull-secret`     | [See below](#pull-secret-key). |
 
 #### `cluster-secrets-azure`
 
@@ -59,7 +68,7 @@ currently exist:
 |       Key                         | Description |
 | ----------------------------------| ----------- |
 | `osServicePrincipal.json`     | Credentials for the Azure API. This is a json file that contains fields described in [upstream credentials doc](https://docs.microsoft.com/en-us/azure-stack/operator/azure-stack-create-service-principals#create-a-service-principal-using-a-client-secret). |
-| `pull-secret`    | Credentials for pulling OpenShift images from Quay and for authenticating to telemetry. Retrieved from [try.openshift.com](https://try.openshift.com) under the ccoleman+openshift-ci-test@redhat.com account, and has the service account token from the `ocp` namespace added with `oc registry login --to=/tmp/pull-secret -z default -n ocp`.|
+| `pull-secret`    | [See below](#pull-secret-key). |
 | `ssh-privatekey` | Private half of the SSH key, for connecting to Azure VMs. |
 | `ssh-publickey`  | Public half of the SSH key, for connecting to Azure VMs. |
 
@@ -69,7 +78,7 @@ currently exist:
 | ----------------------| ----------- |
 | `secret.auto.tfvars`  | Secret part of terraform vars. See the [example tfvars](https://github.com/openshift/installer/blob/master/upi/vsphere/terraform.tfvars.example). |
 | `.awscred`            | Credentials for the AWS EC2 API, used for Route53 access. See the [upstream credentials doc](https://docs.aws.amazon.com/cli/latest/userguide/cli-multiple-profiles.html). |
-| `pull-secret`         | Credentials for pulling OpenShift images from Quay and for authenticating to telemetry. Retrieved from [try.openshift.com](https://try.openshift.com) under the ccoleman+openshift-ci-test@redhat.com account, and has the service account token from the `ocp` namespace added with `oc registry login --to=/tmp/pull-secret -z default -n ocp`.|
+| `pull-secret`         | [See below](#pull-secret-key). |
 | `ssh-privatekey`      | Private half of the SSH key, for connecting to VSphere VMs. |
 | `ssh-publickey`       | Public half of the SSH key, for connecting to VSphere VMs. |
 
@@ -78,9 +87,9 @@ currently exist:
 |        Key        | Description |
 | ----------------- | ----------- |
 | `clouds.yaml`     | Credentials for the openstack cloud. See the [Openstack docs](https://docs.openstack.org/python-openstackclient/pike/configuration/index.html). |
-| `ssh-privatekey`   | Private half of the SSH key, for connecting to OpenStack Nova VMs. |
+| `ssh-privatekey`  | Private half of the SSH key, for connecting to OpenStack Nova VMs. |
 | `ssh-publickey`   | Public half of the SSH key, for connecting to OpenStack Nova VMs. |
-| `pull-secret`    | Credentials for pulling OpenShift images from Quay and for authenticating to telemetry. Retrieved from [try.openshift.com](https://try.openshift.com) under the ccoleman+openshift-ci-test@redhat.com account, and has the service account token from the `ocp` namespace added with `oc registry login --to=/tmp/pull-secret -z default -n ocp`.|
+| `pull-secret`     | [See below](#pull-secret-key). |
 
 #### `cluster-secrets-metal`
 
@@ -88,9 +97,21 @@ currently exist:
 | -----------------| ----------- |
 | `.awscred`       | Credentials for the AWS EC2 API, used for Route53 access. See the [upstream credentials doc](https://docs.aws.amazon.com/cli/latest/userguide/cli-multiple-profiles.html). |
 | `.packetcred`    | Credentials for the Packet.net API, used for creating bare-metal servers. See the [upstream credentials doc](https://www.packet.com/developers/api/). |
-| `pull-secret`    | Credentials for pulling OpenShift images from Quay and for authenticating to telemetry. Retrieved from [try.openshift.com](https://try.openshift.com) under the ccoleman+openshift-ci-test@redhat.com account, and has the service account token from the `ocp` namespace added with `oc registry login --to=/tmp/pull-secret -z default -n ocp`.|
+| `pull-secret`    | [See below](#pull-secret-key). |
 | `ssh-privatekey` | Private half of the SSH key, for connecting to VMs. |
 | `ssh-publickey`  | Public half of the SSH key, for connecting to VMs. |
+
+#### `pull-secret` key
+
+All secrets in this category have a `pull-secret` key containing:
+
+- credentials for pulling OpenShift images from Quay
+- credentials for authenticating to telemetry (retrieved from
+  [try.openshift.com](https://try.openshift.com) under the
+  ccoleman+openshift-ci-test@redhat.com account)
+- the service account token from the `ocp` namespace in each CI cluster, added
+  with `oc registry login --to=/tmp/pull-secret -z default -n ocp`, allowing
+  images to be pulled as `system:authenticated`
 
 ### GCE ServiceAccount Credentials
 
@@ -165,13 +186,11 @@ should identify the owning team and should correspond to a subdirectory of [core
 The following Jenkins masters have their credentials stored in secrets on the
 cluster:
 
- - openshift-ci-robot@ci.dev.openshift.redhat.com
  - openshift-ci-robot@ci.openshift.redhat.com
  - katabuilder@kata-jenkins-ci.westus2.cloudapp.azure.com
 
 For each master, the `jenkins-credentials-${master_url}` secret holds the
-password for the Jenkins user in the `password` key. For the `ci.dev` master,
-a client cert, key and CA cert are also present for client authentication.
+password for the Jenkins user in the `password` key.
 
 
 ### Slack Bot Credentials
@@ -185,19 +204,7 @@ This token is granted access to talk to the Slack API for automation purposes.
 
 ## Secret Regeneration
 
-In order to regenerate the secrets in the case of an emergency, a CI admin can
-recreate all of the above secrets by running:
-
-```
-$ BW_SESSION="$( bw login username@company.com password --raw )" ci-operator/populate-secrets-from-bitwarden.sh
-```
-
-This requires the appropriate access in BitWarden and will create a new session
-that can be closed with:
-
-```
-$ bw logout
-```
+`make job JOB=periodic-ci-secret-bootstrap` or wait for the [periodic-ci-secret-bootstrap](https://github.com/openshift/release/blob/f266979b7e0cfe8d7bf25a013a96a9086e7e8731/ci-operator/jobs/infra-periodics.yaml#L1187) job to be triggered the next time.
 
 ## Secret Drift Detection
 
@@ -213,11 +220,3 @@ $ oc get secrets --selector=ci.openshift.io/managed=true --export -o yaml -n ci 
 $ oc get secrets --selector=ci.openshift.io/managed=true --export -o yaml -n $TEST_NS > proposed.yaml
 $ diff prod.yaml proposed.yaml
 ```
-
-# Self-Managed Secrets
-
-In order to provide custom secrets to jobs without putting the secret management
-into the hands of the Developer Productivity (Test Platform) team, it is possible
-to create the secrets in the cluster and have them automatically mirrored to be
-available for jobs. See the [doc](../core-services/secret-mirroring/README.md#self-managed-secrets)
-for details and instructions.

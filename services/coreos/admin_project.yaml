@@ -1,7 +1,0 @@
-kind: ProjectRequest
-apiVersion: v1
-metadata:
-  name: coreos
-displayName: CoreOS project
-description: |
-  CoreOS related CI resources.

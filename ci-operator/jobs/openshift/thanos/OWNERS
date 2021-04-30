@@ -2,25 +2,21 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
-- brancz
 - bwplotka
+- dgrisonnet
+- jan--f
 - kakkoyun
-- krasi-georgiev
-- metalmatze
 - paulfantom
-- pgier
 - s-urbaniak
 - simonpasquier
 - squat
 options: {}
 reviewers:
-- brancz
 - bwplotka
+- dgrisonnet
+- jan--f
 - kakkoyun
-- krasi-georgiev
-- metalmatze
 - paulfantom
-- pgier
 - s-urbaniak
 - simonpasquier
 - squat

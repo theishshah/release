@@ -4,6 +4,7 @@ presubmits:
     always_run: true
     branches:
     - master
+    cluster: build01
     context: ci/prow/benchmark
     decorate: true
     decoration_config:
@@ -16,30 +17,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=master
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=telemeter
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
         - --secret-dir=/usr/local/benchmark-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=benchmark
-        - --template=/usr/local/benchmark
         command:
         - ci-operator
-        env:
-        - name: CLUSTER_TYPE
-          value: aws
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-telemeter-master.yaml
-              name: ci-operator-master-configs
-        - name: JOB_NAME_SAFE
-          value: benchmark
-        - name: TEST_COMMAND
-          value: make test-benchmark
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -47,32 +32,45 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
         - mountPath: /usr/local/benchmark-cluster-profile
           name: cluster-profile
-        - mountPath: /usr/local/benchmark
-          name: job-definition
-          subPath: cluster-launch-installer-src.yaml
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
           - secret:
               name: cluster-secrets-aws
-      - configMap:
-          name: prow-job-cluster-launch-installer-src
-        name: job-definition
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )benchmark,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - master
+    cluster: build01
     context: ci/prow/e2e-aws
     decorate: true
     decoration_config:
@@ -85,30 +83,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=master
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=telemeter
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
         - --secret-dir=/usr/local/e2e-aws-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-aws
-        - --template=/usr/local/e2e-aws
         command:
         - ci-operator
-        env:
-        - name: CLUSTER_TYPE
-          value: aws
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-telemeter-master.yaml
-              name: ci-operator-master-configs
-        - name: JOB_NAME_SAFE
-          value: e2e-aws
-        - name: TEST_COMMAND
-          value: TEST_SUITE=openshift/conformance/parallel run-tests
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -116,32 +98,45 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
         - mountPath: /usr/local/e2e-aws-cluster-profile
           name: cluster-profile
-        - mountPath: /usr/local/e2e-aws
-          name: job-definition
-          subPath: cluster-launch-installer-e2e.yaml
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
           - secret:
               name: cluster-secrets-aws
-      - configMap:
-          name: prow-job-cluster-launch-installer-e2e
-        name: job-definition
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )e2e-aws,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - master
+    cluster: build01
     context: ci/prow/e2e-aws-upgrade
     decorate: true
     decoration_config:
@@ -154,23 +149,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=master
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=telemeter
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
         - --secret-dir=/usr/local/e2e-aws-upgrade-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-aws-upgrade
         command:
         - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-telemeter-master.yaml
-              name: ci-operator-master-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -178,29 +164,195 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
         - mountPath: /usr/local/e2e-aws-upgrade-cluster-profile
           name: cluster-profile
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
           - secret:
               name: cluster-secrets-aws
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )e2e-aws-upgrade,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - master
+    cluster: build01
+    context: ci/prow/format
+    decorate: true
+    decoration_config:
+      skip_cloning: true
+    labels:
+      ci-operator.openshift.io/prowgen-controlled: "true"
+      pj-rehearse.openshift.io/can-be-rehearsed: "true"
+    name: pull-ci-openshift-telemeter-master-format
+    rerun_command: /test format
+    spec:
+      containers:
+      - args:
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --report-credentials-file=/etc/report/credentials
+        - --target=format
+        command:
+        - ci-operator
+        image: ci-operator:latest
+        imagePullPolicy: Always
+        name: ""
+        resources:
+          requests:
+            cpu: 10m
+        volumeMounts:
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
+          readOnly: true
+      serviceAccountName: ci-operator
+      volumes:
+      - name: pull-secret
+        secret:
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )format,?($|\s.*)
+  - agent: kubernetes
+    always_run: true
+    branches:
+    - master
+    cluster: build01
+    context: ci/prow/images
+    decorate: true
+    decoration_config:
+      skip_cloning: true
+    labels:
+      ci-operator.openshift.io/prowgen-controlled: "true"
+      pj-rehearse.openshift.io/can-be-rehearsed: "true"
+    name: pull-ci-openshift-telemeter-master-images
+    rerun_command: /test images
+    spec:
+      containers:
+      - args:
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --report-credentials-file=/etc/report/credentials
+        - --target=[images]
+        - --target=[release:latest]
+        command:
+        - ci-operator
+        image: ci-operator:latest
+        imagePullPolicy: Always
+        name: ""
+        resources:
+          requests:
+            cpu: 10m
+        volumeMounts:
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
+          readOnly: true
+      serviceAccountName: ci-operator
+      volumes:
+      - name: pull-secret
+        secret:
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )images,?($|\s.*)
+  - agent: kubernetes
+    always_run: true
+    branches:
+    - master
+    cluster: build01
+    context: ci/prow/integration
+    decorate: true
+    decoration_config:
+      skip_cloning: true
+    labels:
+      ci-operator.openshift.io/prowgen-controlled: "true"
+      pj-rehearse.openshift.io/can-be-rehearsed: "true"
+    name: pull-ci-openshift-telemeter-master-integration
+    rerun_command: /test integration
+    spec:
+      containers:
+      - args:
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --report-credentials-file=/etc/report/credentials
+        - --target=integration
+        command:
+        - ci-operator
+        image: ci-operator:latest
+        imagePullPolicy: Always
+        name: ""
+        resources:
+          requests:
+            cpu: 10m
+        volumeMounts:
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
+          readOnly: true
+      serviceAccountName: ci-operator
+      volumes:
+      - name: pull-secret
+        secret:
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )integration,?($|\s.*)
+  - agent: kubernetes
+    always_run: true
+    branches:
+    - master
+    cluster: build01
     context: ci/prow/generate
     decorate: true
-    name: pull-ci-openshift-telemeter-master-generate
+    labels:
+      ci.openshift.io/manually-branched: "true"
+    name: pull-ci-openshift-telemeter-master-master-generate
     rerun_command: /test generate
     spec:
       containers:
@@ -227,103 +379,7 @@ presubmits:
     always_run: true
     branches:
     - master
-    context: ci/prow/images
-    decorate: true
-    decoration_config:
-      skip_cloning: true
-    labels:
-      ci-operator.openshift.io/prowgen-controlled: "true"
-      pj-rehearse.openshift.io/can-be-rehearsed: "true"
-    name: pull-ci-openshift-telemeter-master-images
-    rerun_command: /test images
-    spec:
-      containers:
-      - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=master
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=telemeter
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
-        - --target=[images]
-        - --target=[release:latest]
-        command:
-        - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-telemeter-master.yaml
-              name: ci-operator-master-configs
-        image: ci-operator:latest
-        imagePullPolicy: Always
-        name: ""
-        resources:
-          requests:
-            cpu: 10m
-        volumeMounts:
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
-          readOnly: true
-      serviceAccountName: ci-operator
-      volumes:
-      - name: sentry-dsn
-        secret:
-          secretName: sentry-dsn
-    trigger: (?m)^/test( | .* )images,?($|\s.*)
-  - agent: kubernetes
-    always_run: true
-    branches:
-    - master
-    context: ci/prow/integration
-    decorate: true
-    decoration_config:
-      skip_cloning: true
-    labels:
-      ci-operator.openshift.io/prowgen-controlled: "true"
-      pj-rehearse.openshift.io/can-be-rehearsed: "true"
-    name: pull-ci-openshift-telemeter-master-integration
-    rerun_command: /test integration
-    spec:
-      containers:
-      - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=master
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=telemeter
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
-        - --target=integration
-        command:
-        - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-telemeter-master.yaml
-              name: ci-operator-master-configs
-        image: ci-operator:latest
-        imagePullPolicy: Always
-        name: ""
-        resources:
-          requests:
-            cpu: 10m
-        volumeMounts:
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
-          readOnly: true
-      serviceAccountName: ci-operator
-      volumes:
-      - name: sentry-dsn
-        secret:
-          secretName: sentry-dsn
-    trigger: (?m)^/test( | .* )integration,?($|\s.*)
-  - agent: kubernetes
-    always_run: true
-    branches:
-    - master
+    cluster: build01
     context: ci/prow/unit
     decorate: true
     decoration_config:
@@ -336,22 +392,12 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=master
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=telemeter
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --report-credentials-file=/etc/report/credentials
         - --target=unit
         command:
         - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-telemeter-master.yaml
-              name: ci-operator-master-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -359,19 +405,29 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )unit,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - master
+    cluster: build01
     context: ci/prow/vendor
     decorate: true
     decoration_config:
@@ -384,22 +440,12 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=master
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=telemeter
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --report-credentials-file=/etc/report/credentials
         - --target=vendor
         command:
         - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-telemeter-master.yaml
-              name: ci-operator-master-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -407,12 +453,21 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )vendor,?($|\s.*)

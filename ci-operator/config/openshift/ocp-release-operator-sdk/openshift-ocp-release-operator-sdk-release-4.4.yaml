@@ -21,7 +21,6 @@ images:
     osdk-builder:
       as:
       - osdk-builder
-      paths: null
   to: osdk-ansible-e2e-hybrid
 - dockerfile_path: ci/dockerfiles/ansible-e2e.Dockerfile
   from: ansible-operator
@@ -29,7 +28,6 @@ images:
     osdk-builder:
       as:
       - osdk-builder
-      paths: null
   to: osdk-ansible-e2e
 promotion:
   excluded_images:
@@ -41,8 +39,6 @@ promotion:
   namespace: ocp
 resources:
   '*':
-    limits:
-      memory: 4Gi
     requests:
       cpu: 200m
       memory: 200Mi
@@ -73,6 +69,18 @@ tests:
   container:
     from: src
 - as: e2e-aws-ansible
-  commands: make test/e2e/ansible2
-  openshift_installer_src:
+  steps:
     cluster_profile: aws
+    test:
+    - as: test
+      cli: latest
+      commands: make test/e2e/ansible2
+      from: src
+      resources:
+        requests:
+          cpu: 100m
+    workflow: ipi-aws
+zz_generated_metadata:
+  branch: release-4.4
+  org: openshift
+  repo: ocp-release-operator-sdk

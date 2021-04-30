@@ -1,51 +1,30 @@
 presubmits:
   openshift/cluster-network-operator:
   - agent: kubernetes
-    always_run: false
+    always_run: true
     branches:
     - master
-    context: ci/prow/e2e-aws-multitenant
+    cluster: build01
+    context: ci/prow/e2e-agnostic-upgrade
     decorate: true
     decoration_config:
       skip_cloning: true
     labels:
+      ci-operator.openshift.io/prowgen-controlled: "true"
       pj-rehearse.openshift.io/can-be-rehearsed: "true"
-    name: pull-ci-openshift-cluster-network-operator-master-e2e-aws-multitenant
-    rerun_command: /test e2e-aws-multitenant
+    name: pull-ci-openshift-cluster-network-operator-master-e2e-agnostic-upgrade
+    rerun_command: /test e2e-agnostic-upgrade
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --give-pr-author-access-to-namespace=true
-        - --secret-dir=/usr/local/e2e-aws-multitenant-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
-        - --target=e2e-aws-multitenant
-        - --template=/usr/local/e2e-aws-multitenant
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
+        - --secret-dir=/usr/local/e2e-agnostic-upgrade-cluster-profile
+        - --target=e2e-agnostic-upgrade
         command:
         - ci-operator
-        env:
-        - name: CLUSTER_NETWORK_MANIFEST
-          value: |
-            apiVersion: operator.openshift.io/v1
-            kind: Network
-            metadata:
-              name: cluster
-            spec:
-              defaultNetwork:
-                type: OpenShiftSDN
-                openshiftSDNConfig:
-                  mode: Multitenant
-        - name: CLUSTER_TYPE
-          value: aws
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-cluster-network-operator-master.yaml
-              name: ci-operator-master-configs
-        - name: JOB_NAME_SAFE
-          value: e2e-aws-multitenant
-        - name: TEST_COMMAND
-          value: TEST_SUITE=openshift/conformance/parallel run-tests
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -53,99 +32,311 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /usr/local/e2e-aws-multitenant-cluster-profile
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
+        - mountPath: /usr/local/e2e-agnostic-upgrade-cluster-profile
           name: cluster-profile
-        - mountPath: /usr/local/e2e-aws-multitenant
-          name: job-definition
-          subPath: cluster-launch-installer-e2e.yaml
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
           - secret:
-              name: cluster-secrets-aws
-      - configMap:
-          name: prow-job-cluster-launch-installer-e2e
-        name: job-definition
-      - name: sentry-dsn
+              name: cluster-secrets-azure4
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
-    trigger: (?m)^/test( | .* )e2e-aws-multitenant,?($|\s.*)
-  - agent: kubernetes
-    always_run: false
-    branches:
-    - master
-    context: ci/prow/e2e-aws-ovn-kubernetes
-    decorate: true
-    decoration_config:
-      skip_cloning: true
-    labels:
-      pj-rehearse.openshift.io/can-be-rehearsed: "true"
-    name: pull-ci-openshift-cluster-network-operator-master-e2e-aws-ovn-kubernetes
-    optional: true
-    rerun_command: /test e2e-aws-ovn-kubernetes
-    spec:
-      containers:
-      - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --give-pr-author-access-to-namespace=true
-        - --secret-dir=/usr/local/e2e-aws-ovn-kubernetes-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
-        - --target=e2e-aws-ovn-kubernetes
-        - --template=/usr/local/e2e-aws-ovn-kubernetes
-        command:
-        - ci-operator
-        env:
-        - name: CLUSTER_NETWORK_TYPE
-          value: OVNKubernetes
-        - name: CLUSTER_TYPE
-          value: aws
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-cluster-network-operator-master.yaml
-              name: ci-operator-master-configs
-        - name: JOB_NAME_SAFE
-          value: e2e-aws-ovn-kubernetes
-        - name: TEST_COMMAND
-          value: TEST_SUITE=openshift/conformance/parallel run-tests
-        image: ci-operator:latest
-        imagePullPolicy: Always
-        name: ""
-        resources:
-          requests:
-            cpu: 10m
-        volumeMounts:
-        - mountPath: /usr/local/e2e-aws-ovn-kubernetes-cluster-profile
-          name: cluster-profile
-        - mountPath: /usr/local/e2e-aws-ovn-kubernetes
-          name: job-definition
-          subPath: cluster-launch-installer-e2e.yaml
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
-          readOnly: true
-      serviceAccountName: ci-operator
-      volumes:
-      - name: cluster-profile
-        projected:
-          sources:
-          - secret:
-              name: cluster-secrets-aws
-      - configMap:
-          name: prow-job-cluster-launch-installer-e2e
-        name: job-definition
-      - name: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
         secret:
-          secretName: sentry-dsn
-    trigger: (?m)^/test( | .* )e2e-aws-ovn-kubernetes,?($|\s.*)
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )e2e-agnostic-upgrade,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - master
+    cluster: build01
+    context: ci/prow/e2e-aws-ovn-windows
+    decorate: true
+    decoration_config:
+      skip_cloning: true
+    labels:
+      ci-operator.openshift.io/prowgen-controlled: "true"
+      pj-rehearse.openshift.io/can-be-rehearsed: "true"
+    name: pull-ci-openshift-cluster-network-operator-master-e2e-aws-ovn-windows
+    rerun_command: /test e2e-aws-ovn-windows
+    spec:
+      containers:
+      - args:
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
+        - --secret-dir=/usr/local/e2e-aws-ovn-windows-cluster-profile
+        - --target=e2e-aws-ovn-windows
+        command:
+        - ci-operator
+        image: ci-operator:latest
+        imagePullPolicy: Always
+        name: ""
+        resources:
+          requests:
+            cpu: 10m
+        volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
+        - mountPath: /usr/local/e2e-aws-ovn-windows-cluster-profile
+          name: cluster-profile
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
+          readOnly: true
+      serviceAccountName: ci-operator
+      volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
+      - name: cluster-profile
+        projected:
+          sources:
+          - secret:
+              name: cluster-secrets-aws
+      - name: pull-secret
+        secret:
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )e2e-aws-ovn-windows,?($|\s.*)
+  - agent: kubernetes
+    always_run: true
+    branches:
+    - master
+    cluster: build01
+    context: ci/prow/e2e-aws-sdn-multi
+    decorate: true
+    decoration_config:
+      skip_cloning: true
+    labels:
+      ci-operator.openshift.io/prowgen-controlled: "true"
+      pj-rehearse.openshift.io/can-be-rehearsed: "true"
+    name: pull-ci-openshift-cluster-network-operator-master-e2e-aws-sdn-multi
+    rerun_command: /test e2e-aws-sdn-multi
+    spec:
+      containers:
+      - args:
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
+        - --secret-dir=/usr/local/e2e-aws-sdn-multi-cluster-profile
+        - --target=e2e-aws-sdn-multi
+        command:
+        - ci-operator
+        image: ci-operator:latest
+        imagePullPolicy: Always
+        name: ""
+        resources:
+          requests:
+            cpu: 10m
+        volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
+        - mountPath: /usr/local/e2e-aws-sdn-multi-cluster-profile
+          name: cluster-profile
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
+          readOnly: true
+      serviceAccountName: ci-operator
+      volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
+      - name: cluster-profile
+        projected:
+          sources:
+          - secret:
+              name: cluster-secrets-aws
+      - name: pull-secret
+        secret:
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )e2e-aws-sdn-multi,?($|\s.*)
+  - agent: kubernetes
+    always_run: true
+    branches:
+    - master
+    cluster: build01
+    context: ci/prow/e2e-azure-ovn
+    decorate: true
+    decoration_config:
+      skip_cloning: true
+    labels:
+      ci-operator.openshift.io/prowgen-controlled: "true"
+      pj-rehearse.openshift.io/can-be-rehearsed: "true"
+    name: pull-ci-openshift-cluster-network-operator-master-e2e-azure-ovn
+    optional: true
+    rerun_command: /test e2e-azure-ovn
+    spec:
+      containers:
+      - args:
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
+        - --secret-dir=/usr/local/e2e-azure-ovn-cluster-profile
+        - --target=e2e-azure-ovn
+        command:
+        - ci-operator
+        image: ci-operator:latest
+        imagePullPolicy: Always
+        name: ""
+        resources:
+          requests:
+            cpu: 10m
+        volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
+        - mountPath: /usr/local/e2e-azure-ovn-cluster-profile
+          name: cluster-profile
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
+          readOnly: true
+      serviceAccountName: ci-operator
+      volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
+      - name: cluster-profile
+        projected:
+          sources:
+          - secret:
+              name: cluster-secrets-azure4
+      - name: pull-secret
+        secret:
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )e2e-azure-ovn,?($|\s.*)
+  - agent: kubernetes
+    always_run: false
+    branches:
+    - master
+    cluster: build01
+    context: ci/prow/e2e-azure-ovn-dualstack
+    decorate: true
+    decoration_config:
+      skip_cloning: true
+    labels:
+      ci-operator.openshift.io/prowgen-controlled: "true"
+      pj-rehearse.openshift.io/can-be-rehearsed: "true"
+    name: pull-ci-openshift-cluster-network-operator-master-e2e-azure-ovn-dualstack
+    optional: true
+    rerun_command: /test e2e-azure-ovn-dualstack
+    spec:
+      containers:
+      - args:
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
+        - --secret-dir=/usr/local/e2e-azure-ovn-dualstack-cluster-profile
+        - --target=e2e-azure-ovn-dualstack
+        command:
+        - ci-operator
+        image: ci-operator:latest
+        imagePullPolicy: Always
+        name: ""
+        resources:
+          requests:
+            cpu: 10m
+        volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
+        - mountPath: /usr/local/e2e-azure-ovn-dualstack-cluster-profile
+          name: cluster-profile
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
+          readOnly: true
+      serviceAccountName: ci-operator
+      volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
+      - name: cluster-profile
+        projected:
+          sources:
+          - secret:
+              name: cluster-secrets-azure4
+      - name: pull-secret
+        secret:
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )e2e-azure-ovn-dualstack,?($|\s.*)
+  - agent: kubernetes
+    always_run: true
+    branches:
+    - master
+    cluster: build01
     context: ci/prow/e2e-gcp
     decorate: true
     decoration_config:
@@ -158,28 +349,367 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=master
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=cluster-network-operator
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
         - --secret-dir=/usr/local/e2e-gcp-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-gcp
-        - --template=/usr/local/e2e-gcp
+        command:
+        - ci-operator
+        image: ci-operator:latest
+        imagePullPolicy: Always
+        name: ""
+        resources:
+          requests:
+            cpu: 10m
+        volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
+        - mountPath: /usr/local/e2e-gcp-cluster-profile
+          name: cluster-profile
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
+          readOnly: true
+      serviceAccountName: ci-operator
+      volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
+      - name: cluster-profile
+        projected:
+          sources:
+          - secret:
+              name: cluster-secrets-gcp
+          - configMap:
+              name: cluster-profile-gcp
+      - name: pull-secret
+        secret:
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )e2e-gcp,?($|\s.*)
+  - agent: kubernetes
+    always_run: true
+    branches:
+    - master
+    cluster: build01
+    context: ci/prow/e2e-gcp-ovn
+    decorate: true
+    decoration_config:
+      skip_cloning: true
+    labels:
+      ci-operator.openshift.io/prowgen-controlled: "true"
+      pj-rehearse.openshift.io/can-be-rehearsed: "true"
+    name: pull-ci-openshift-cluster-network-operator-master-e2e-gcp-ovn
+    rerun_command: /test e2e-gcp-ovn
+    spec:
+      containers:
+      - args:
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
+        - --secret-dir=/usr/local/e2e-gcp-ovn-cluster-profile
+        - --target=e2e-gcp-ovn
+        command:
+        - ci-operator
+        image: ci-operator:latest
+        imagePullPolicy: Always
+        name: ""
+        resources:
+          requests:
+            cpu: 10m
+        volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
+        - mountPath: /usr/local/e2e-gcp-ovn-cluster-profile
+          name: cluster-profile
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
+          readOnly: true
+      serviceAccountName: ci-operator
+      volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
+      - name: cluster-profile
+        projected:
+          sources:
+          - secret:
+              name: cluster-secrets-gcp
+          - configMap:
+              name: cluster-profile-gcp
+      - name: pull-secret
+        secret:
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )e2e-gcp-ovn,?($|\s.*)
+  - agent: kubernetes
+    always_run: true
+    branches:
+    - master
+    cluster: build01
+    context: ci/prow/e2e-gcp-ovn-upgrade
+    decorate: true
+    decoration_config:
+      skip_cloning: true
+    labels:
+      ci-operator.openshift.io/prowgen-controlled: "true"
+      pj-rehearse.openshift.io/can-be-rehearsed: "true"
+    name: pull-ci-openshift-cluster-network-operator-master-e2e-gcp-ovn-upgrade
+    optional: true
+    rerun_command: /test e2e-gcp-ovn-upgrade
+    spec:
+      containers:
+      - args:
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
+        - --secret-dir=/usr/local/e2e-gcp-ovn-upgrade-cluster-profile
+        - --target=e2e-gcp-ovn-upgrade
+        command:
+        - ci-operator
+        image: ci-operator:latest
+        imagePullPolicy: Always
+        name: ""
+        resources:
+          requests:
+            cpu: 10m
+        volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
+        - mountPath: /usr/local/e2e-gcp-ovn-upgrade-cluster-profile
+          name: cluster-profile
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
+          readOnly: true
+      serviceAccountName: ci-operator
+      volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
+      - name: cluster-profile
+        projected:
+          sources:
+          - secret:
+              name: cluster-secrets-gcp
+          - configMap:
+              name: cluster-profile-gcp
+      - name: pull-secret
+        secret:
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )e2e-gcp-ovn-upgrade,?($|\s.*)
+  - agent: kubernetes
+    always_run: true
+    branches:
+    - master
+    cluster: build01
+    context: ci/prow/e2e-metal-ipi-ovn-ipv6
+    decorate: true
+    decoration_config:
+      skip_cloning: true
+    labels:
+      ci-operator.openshift.io/prowgen-controlled: "true"
+      pj-rehearse.openshift.io/can-be-rehearsed: "true"
+    name: pull-ci-openshift-cluster-network-operator-master-e2e-metal-ipi-ovn-ipv6
+    rerun_command: /test e2e-metal-ipi-ovn-ipv6
+    spec:
+      containers:
+      - args:
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
+        - --secret-dir=/usr/local/e2e-metal-ipi-ovn-ipv6-cluster-profile
+        - --target=e2e-metal-ipi-ovn-ipv6
+        command:
+        - ci-operator
+        image: ci-operator:latest
+        imagePullPolicy: Always
+        name: ""
+        resources:
+          requests:
+            cpu: 10m
+        volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
+        - mountPath: /usr/local/e2e-metal-ipi-ovn-ipv6-cluster-profile
+          name: cluster-profile
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
+          readOnly: true
+      serviceAccountName: ci-operator
+      volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
+      - name: cluster-profile
+        projected:
+          sources:
+          - secret:
+              name: cluster-secrets-packet
+          - configMap:
+              name: cluster-profile-packet
+      - name: pull-secret
+        secret:
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )e2e-metal-ipi-ovn-ipv6,?($|\s.*)
+  - agent: kubernetes
+    always_run: true
+    branches:
+    - master
+    cluster: build01
+    context: ci/prow/e2e-metal-ipi-ovn-ipv6-ipsec
+    decorate: true
+    decoration_config:
+      skip_cloning: true
+    labels:
+      ci-operator.openshift.io/prowgen-controlled: "true"
+      pj-rehearse.openshift.io/can-be-rehearsed: "true"
+    name: pull-ci-openshift-cluster-network-operator-master-e2e-metal-ipi-ovn-ipv6-ipsec
+    optional: true
+    rerun_command: /test e2e-metal-ipi-ovn-ipv6-ipsec
+    spec:
+      containers:
+      - args:
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
+        - --secret-dir=/usr/local/e2e-metal-ipi-ovn-ipv6-ipsec-cluster-profile
+        - --target=e2e-metal-ipi-ovn-ipv6-ipsec
+        command:
+        - ci-operator
+        image: ci-operator:latest
+        imagePullPolicy: Always
+        name: ""
+        resources:
+          requests:
+            cpu: 10m
+        volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
+        - mountPath: /usr/local/e2e-metal-ipi-ovn-ipv6-ipsec-cluster-profile
+          name: cluster-profile
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
+          readOnly: true
+      serviceAccountName: ci-operator
+      volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
+      - name: cluster-profile
+        projected:
+          sources:
+          - secret:
+              name: cluster-secrets-packet
+          - configMap:
+              name: cluster-profile-packet
+      - name: pull-secret
+        secret:
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )e2e-metal-ipi-ovn-ipv6-ipsec,?($|\s.*)
+  - agent: kubernetes
+    always_run: true
+    branches:
+    - master
+    cluster: build01
+    context: ci/prow/e2e-openstack-ovn
+    decorate: true
+    decoration_config:
+      skip_cloning: true
+    labels:
+      pj-rehearse.openshift.io/can-be-rehearsed: "true"
+    name: pull-ci-openshift-cluster-network-operator-master-e2e-openstack-ovn
+    optional: true
+    rerun_command: /test e2e-openstack-ovn
+    spec:
+      containers:
+      - args:
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --give-pr-author-access-to-namespace=true
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --repo=cluster-network-operator
+        - --secret-dir=/usr/local/e2e-openstack-ovn-cluster-profile
+        - --target=e2e-openstack-ovn
+        - --template=/usr/local/e2e-openstack-ovn
         command:
         - ci-operator
         env:
         - name: CLUSTER_TYPE
-          value: gcp
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-cluster-network-operator-master.yaml
-              name: ci-operator-master-configs
+          value: openstack
+        - name: CLUSTER_VARIANT
+          value: ovn
         - name: JOB_NAME_SAFE
-          value: e2e-gcp
+          value: e2e-openstack-ovn
+        - name: KURYR_ENABLED
+          value: "false"
         - name: TEST_COMMAND
           value: TEST_SUITE=openshift/conformance/parallel run-tests
         image: ci-operator:latest
@@ -189,63 +719,66 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /usr/local/e2e-gcp-cluster-profile
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
+        - mountPath: /usr/local/e2e-openstack-ovn-cluster-profile
           name: cluster-profile
-        - mountPath: /usr/local/e2e-gcp
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /usr/local/e2e-openstack-ovn
           name: job-definition
-          subPath: cluster-launch-installer-e2e.yaml
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+          subPath: cluster-launch-installer-openstack-e2e.yaml
+        - mountPath: /etc/pull-secret
+          name: pull-secret
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
           - secret:
-              name: cluster-secrets-gcp
-          - configMap:
-              name: cluster-profile-gcp
+              name: cluster-secrets-openstack
       - configMap:
-          name: prow-job-cluster-launch-installer-e2e
+          name: prow-job-cluster-launch-installer-openstack-e2e
         name: job-definition
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
-    trigger: (?m)^/test( | .* )e2e-gcp,?($|\s.*)
+          secretName: registry-pull-credentials
+    trigger: (?m)^/test( | .* )e2e-openstack-ovn,?($|\s.*)
   - agent: kubernetes
-    always_run: false
+    always_run: true
     branches:
     - master
-    context: ci/prow/e2e-gcp-ovn-upgrade
+    cluster: build01
+    context: ci/prow/e2e-ovn-hybrid-step-registry
     decorate: true
     decoration_config:
       skip_cloning: true
     labels:
       ci-operator.openshift.io/prowgen-controlled: "true"
       pj-rehearse.openshift.io/can-be-rehearsed: "true"
-    name: pull-ci-openshift-cluster-network-operator-master-e2e-gcp-ovn-upgrade
-    rerun_command: /test e2e-gcp-ovn-upgrade
+    name: pull-ci-openshift-cluster-network-operator-master-e2e-ovn-hybrid-step-registry
+    optional: true
+    rerun_command: /test e2e-ovn-hybrid-step-registry
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=master
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=cluster-network-operator
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --secret-dir=/usr/local/e2e-gcp-ovn-upgrade-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
-        - --target=e2e-gcp-ovn-upgrade
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
+        - --secret-dir=/usr/local/e2e-ovn-hybrid-step-registry-cluster-profile
+        - --target=e2e-ovn-hybrid-step-registry
         command:
         - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-cluster-network-operator-master.yaml
-              name: ci-operator-master-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -253,57 +786,66 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /usr/local/e2e-gcp-ovn-upgrade-cluster-profile
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
+        - mountPath: /usr/local/e2e-ovn-hybrid-step-registry-cluster-profile
           name: cluster-profile
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
           - secret:
-              name: cluster-secrets-gcp
-          - configMap:
-              name: cluster-profile-gcp
-      - name: sentry-dsn
+              name: cluster-secrets-aws
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
-    trigger: (?m)^/test( | .* )e2e-gcp-ovn-upgrade,?($|\s.*)
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )e2e-ovn-hybrid-step-registry,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - master
-    context: ci/prow/e2e-gcp-upgrade
+    cluster: build01
+    context: ci/prow/e2e-ovn-ipsec-step-registry
     decorate: true
     decoration_config:
       skip_cloning: true
     labels:
       ci-operator.openshift.io/prowgen-controlled: "true"
       pj-rehearse.openshift.io/can-be-rehearsed: "true"
-    name: pull-ci-openshift-cluster-network-operator-master-e2e-gcp-upgrade
-    rerun_command: /test e2e-gcp-upgrade
+    name: pull-ci-openshift-cluster-network-operator-master-e2e-ovn-ipsec-step-registry
+    optional: true
+    rerun_command: /test e2e-ovn-ipsec-step-registry
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=master
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=cluster-network-operator
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --secret-dir=/usr/local/e2e-gcp-upgrade-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
-        - --target=e2e-gcp-upgrade
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
+        - --secret-dir=/usr/local/e2e-ovn-ipsec-step-registry-cluster-profile
+        - --target=e2e-ovn-ipsec-step-registry
         command:
         - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-cluster-network-operator-master.yaml
-              name: ci-operator-master-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -311,28 +853,246 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /usr/local/e2e-gcp-upgrade-cluster-profile
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
+        - mountPath: /usr/local/e2e-ovn-ipsec-step-registry-cluster-profile
           name: cluster-profile
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
           - secret:
-              name: cluster-secrets-gcp
-          - configMap:
-              name: cluster-profile-gcp
-      - name: sentry-dsn
+              name: cluster-secrets-aws
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
-    trigger: (?m)^/test( | .* )e2e-gcp-upgrade,?($|\s.*)
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )e2e-ovn-ipsec-step-registry,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - master
+    cluster: build01
+    context: ci/prow/e2e-ovn-step-registry
+    decorate: true
+    decoration_config:
+      skip_cloning: true
+    labels:
+      ci-operator.openshift.io/prowgen-controlled: "true"
+      pj-rehearse.openshift.io/can-be-rehearsed: "true"
+    name: pull-ci-openshift-cluster-network-operator-master-e2e-ovn-step-registry
+    optional: true
+    rerun_command: /test e2e-ovn-step-registry
+    spec:
+      containers:
+      - args:
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
+        - --secret-dir=/usr/local/e2e-ovn-step-registry-cluster-profile
+        - --target=e2e-ovn-step-registry
+        command:
+        - ci-operator
+        image: ci-operator:latest
+        imagePullPolicy: Always
+        name: ""
+        resources:
+          requests:
+            cpu: 10m
+        volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
+        - mountPath: /usr/local/e2e-ovn-step-registry-cluster-profile
+          name: cluster-profile
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
+          readOnly: true
+      serviceAccountName: ci-operator
+      volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
+      - name: cluster-profile
+        projected:
+          sources:
+          - secret:
+              name: cluster-secrets-aws
+      - name: pull-secret
+        secret:
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )e2e-ovn-step-registry,?($|\s.*)
+  - agent: kubernetes
+    always_run: true
+    branches:
+    - master
+    cluster: vsphere
+    context: ci/prow/e2e-vsphere-ovn
+    decorate: true
+    decoration_config:
+      skip_cloning: true
+    labels:
+      ci-operator.openshift.io/prowgen-controlled: "true"
+      pj-rehearse.openshift.io/can-be-rehearsed: "true"
+    name: pull-ci-openshift-cluster-network-operator-master-e2e-vsphere-ovn
+    optional: true
+    rerun_command: /test e2e-vsphere-ovn
+    spec:
+      containers:
+      - args:
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
+        - --secret-dir=/usr/local/e2e-vsphere-ovn-cluster-profile
+        - --target=e2e-vsphere-ovn
+        command:
+        - ci-operator
+        image: ci-operator:latest
+        imagePullPolicy: Always
+        name: ""
+        resources:
+          requests:
+            cpu: 10m
+        volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
+        - mountPath: /usr/local/e2e-vsphere-ovn-cluster-profile
+          name: cluster-profile
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
+          readOnly: true
+      serviceAccountName: ci-operator
+      volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
+      - name: cluster-profile
+        projected:
+          sources:
+          - secret:
+              name: cluster-secrets-vsphere
+      - name: pull-secret
+        secret:
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )e2e-vsphere-ovn,?($|\s.*)
+  - agent: kubernetes
+    always_run: true
+    branches:
+    - master
+    cluster: vsphere
+    context: ci/prow/e2e-vsphere-windows
+    decorate: true
+    decoration_config:
+      skip_cloning: true
+    labels:
+      ci-operator.openshift.io/prowgen-controlled: "true"
+      pj-rehearse.openshift.io/can-be-rehearsed: "true"
+    name: pull-ci-openshift-cluster-network-operator-master-e2e-vsphere-windows
+    optional: true
+    rerun_command: /test e2e-vsphere-windows
+    spec:
+      containers:
+      - args:
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
+        - --secret-dir=/usr/local/e2e-vsphere-windows-cluster-profile
+        - --target=e2e-vsphere-windows
+        command:
+        - ci-operator
+        image: ci-operator:latest
+        imagePullPolicy: Always
+        name: ""
+        resources:
+          requests:
+            cpu: 10m
+        volumeMounts:
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
+        - mountPath: /usr/local/e2e-vsphere-windows-cluster-profile
+          name: cluster-profile
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
+          readOnly: true
+      serviceAccountName: ci-operator
+      volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
+      - name: cluster-profile
+        projected:
+          sources:
+          - secret:
+              name: cluster-secrets-vsphere
+      - name: pull-secret
+        secret:
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )e2e-vsphere-windows,?($|\s.*)
+  - agent: kubernetes
+    always_run: true
+    branches:
+    - master
+    cluster: build01
     context: ci/prow/images
     decorate: true
     decoration_config:
@@ -345,23 +1105,13 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=master
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=cluster-network-operator
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --report-credentials-file=/etc/report/credentials
         - --target=[images]
         - --target=[release:latest]
         command:
         - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-cluster-network-operator-master.yaml
-              name: ci-operator-master-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -369,19 +1119,29 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )images,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - master
+    cluster: build01
     context: ci/prow/unit
     decorate: true
     decoration_config:
@@ -394,22 +1154,12 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=master
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=cluster-network-operator
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --report-credentials-file=/etc/report/credentials
         - --target=unit
         command:
         - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-cluster-network-operator-master.yaml
-              name: ci-operator-master-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -417,19 +1167,29 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )unit,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - master
+    cluster: build01
     context: ci/prow/verify
     decorate: true
     decoration_config:
@@ -442,22 +1202,12 @@ presubmits:
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=master
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=cluster-network-operator
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --report-credentials-file=/etc/report/credentials
         - --target=verify
         command:
         - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-cluster-network-operator-master.yaml
-              name: ci-operator-master-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -465,12 +1215,21 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
     trigger: (?m)^/test( | .* )verify,?($|\s.*)

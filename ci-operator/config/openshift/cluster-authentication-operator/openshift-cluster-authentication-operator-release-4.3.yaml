@@ -3,6 +3,10 @@ base_images:
     name: "4.3"
     namespace: ocp
     tag: base
+  openshift_release_golang-1.12:
+    name: release
+    namespace: openshift
+    tag: golang-1.12
 build_root:
   image_stream_tag:
     name: release
@@ -10,15 +14,16 @@ build_root:
     tag: golang-1.12
 images:
 - from: base
+  inputs:
+    openshift_release_golang-1.12:
+      as:
+      - registry.svc.ci.openshift.org/openshift/release:golang-1.12
   to: cluster-authentication-operator
 promotion:
-  disabled: true
   name: "4.3"
   namespace: ocp
 resources:
   '*':
-    limits:
-      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -31,31 +36,45 @@ tests:
     make verify -k --warn-undefined-variables
   container:
     from: src
-- artifact_dir: /tmp/artifacts
-  as: unit
+- as: unit
   commands: |
-    mkdir -p /tmp/artifacts
-    make test-unit JUNITFILE=/tmp/artifacts/unit_report.xml --warn-undefined-variables
+    make test-unit JUNITFILE=${ARTIFACT_DIR}/junit_report.xml --warn-undefined-variables
   container:
     from: src
 - as: e2e-aws
-  commands: TEST_SUITE=openshift/conformance/parallel run-tests
-  openshift_installer:
+  steps:
     cluster_profile: aws
+    workflow: openshift-e2e-aws
 - as: e2e-aws-operator
-  commands: |
-    mkdir -p /tmp/artifacts
-    make test-e2e JUNITFILE=/tmp/artifacts/unit_report.xml
-  openshift_installer_src:
+  steps:
     cluster_profile: aws
+    test:
+    - as: test
+      cli: latest
+      commands: |
+        make test-e2e JUNITFILE=${ARTIFACT_DIR}/junit_report.xml
+      from: src
+      resources:
+        requests:
+          cpu: 100m
+    workflow: ipi-aws
 - as: e2e-aws-upgrade
-  commands: TEST_SUITE=all run-upgrade-tests
-  openshift_installer:
+  steps:
     cluster_profile: aws
-    upgrade: true
-- artifact_dir: /tmp/artifacts
-  as: e2e-aws-console-login
-  commands: ./test-prow-e2e.sh login
-  openshift_installer_custom_test_image:
+    workflow: openshift-upgrade-aws
+- as: e2e-console-login
+  steps:
     cluster_profile: aws
-    from: stable:console-tests
+    test:
+    - as: test
+      cli: latest
+      commands: ./test-prow-e2e.sh login
+      from: stable:console-tests
+      resources:
+        requests:
+          cpu: 100m
+    workflow: ipi-aws
+zz_generated_metadata:
+  branch: release-4.3
+  org: openshift
+  repo: cluster-authentication-operator

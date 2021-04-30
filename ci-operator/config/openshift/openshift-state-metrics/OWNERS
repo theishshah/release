@@ -2,11 +2,17 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
-- aditya-konarde
-- blueshells
+- dgrisonnet
+- lilic
+- paulfantom
+- s-urbaniak
+- simonpasquier
 - wanghaoran1988
 options: {}
 reviewers:
-- aditya-konarde
-- blueshells
+- dgrisonnet
+- lilic
+- paulfantom
+- s-urbaniak
+- simonpasquier
 - wanghaoran1988

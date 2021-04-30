@@ -2,19 +2,17 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
-- amitkrout
-- cdrage
 - dharmit
 - girishramnani
 - kadel
 - mik-dass
-- mohammedzee1000
+- valaparthvi
 options: {}
 reviewers:
-- amitkrout
-- cdrage
 - dharmit
 - girishramnani
-- kadel
 - mik-dass
 - mohammedzee1000
+- prietyc123
+- rnapoles-rh
+- valaparthvi

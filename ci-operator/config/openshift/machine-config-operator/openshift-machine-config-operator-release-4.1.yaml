@@ -3,6 +3,10 @@ base_images:
     name: "4.1"
     namespace: ocp
     tag: base
+  openshift_release_golang-1.10:
+    name: release
+    namespace: openshift
+    tag: golang-1.10
 build_root:
   image_stream_tag:
     name: release
@@ -11,26 +15,44 @@ build_root:
 images:
 - dockerfile_path: Dockerfile.machine-config-controller
   from: base
+  inputs:
+    openshift_release_golang-1.10:
+      as:
+      - registry.svc.ci.openshift.org/openshift/release:golang-1.10
   to: machine-config-controller
 - dockerfile_path: Dockerfile.machine-config-server
   from: base
+  inputs:
+    openshift_release_golang-1.10:
+      as:
+      - registry.svc.ci.openshift.org/openshift/release:golang-1.10
   to: machine-config-server
 - dockerfile_path: Dockerfile.machine-config-daemon
   from: base
+  inputs:
+    openshift_release_golang-1.10:
+      as:
+      - registry.svc.ci.openshift.org/openshift/release:golang-1.10
   to: machine-config-daemon
 - dockerfile_path: Dockerfile.machine-config-operator
   from: base
+  inputs:
+    openshift_release_golang-1.10:
+      as:
+      - registry.svc.ci.openshift.org/openshift/release:golang-1.10
   to: machine-config-operator
 - dockerfile_path: Dockerfile.setup-etcd-environment
   from: base
+  inputs:
+    openshift_release_golang-1.10:
+      as:
+      - registry.svc.ci.openshift.org/openshift/release:golang-1.10
   to: setup-etcd-environment
 promotion:
   name: "4.1"
   namespace: ocp
 resources:
   '*':
-    limits:
-      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -43,29 +65,40 @@ tests:
   container:
     from: src
 - as: e2e-aws
-  commands: TEST_SUITE=openshift/conformance/parallel run-tests
-  openshift_installer:
+  steps:
     cluster_profile: aws
+    workflow: openshift-e2e-aws
 - as: verify
   commands: |
     make verify
   container:
     from: src
 - as: e2e-aws-op
-  commands: make test-e2e
-  openshift_installer_src:
+  steps:
     cluster_profile: aws
+    test:
+    - as: test
+      cli: latest
+      commands: make test-e2e
+      from: src
+      resources:
+        requests:
+          cpu: 100m
+    workflow: ipi-aws
 - as: e2e-aws-upgrade
-  commands: TEST_SUITE=all run-upgrade-tests
-  openshift_installer:
+  steps:
     cluster_profile: aws
-    upgrade: true
-- as: e2e-aws-scaleup-rhel7
-  commands: TEST_SUITE=openshift/conformance/parallel run-tests
-  openshift_ansible_40:
-    cluster_profile: aws-centos-40
+    workflow: openshift-upgrade-aws
+- as: e2e-aws-workers-rhel7
+  steps:
+    cluster_profile: aws
+    workflow: openshift-e2e-aws-workers-rhel7
 - as: e2e-aws-disruptive
   commands: setup_ssh_bastion; TEST_SUITE=openshift/disruptive run-tests; TEST_SUITE=openshift/conformance/parallel
     run-tests
   openshift_installer:
     cluster_profile: aws
+zz_generated_metadata:
+  branch: release-4.1
+  org: openshift
+  repo: machine-config-operator

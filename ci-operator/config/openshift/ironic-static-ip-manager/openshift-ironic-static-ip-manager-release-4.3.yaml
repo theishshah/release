@@ -13,16 +13,17 @@ images:
   from: base
   to: ironic-static-ip-manager
 promotion:
-  disabled: true
   name: "4.3"
   namespace: ocp
 resources:
   '*':
-    limits:
-      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
 tag_specification:
   name: "4.3"
   namespace: ocp
+zz_generated_metadata:
+  branch: release-4.3
+  org: openshift
+  repo: ironic-static-ip-manager

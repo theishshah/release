@@ -4,43 +4,30 @@ presubmits:
     always_run: true
     branches:
     - release-next
-    context: ci/prow/e2e-aws-ocp-42
+    cluster: build01
+    context: ci/prow/4.6-e2e
     decorate: true
     decoration_config:
       skip_cloning: true
     labels:
       ci-operator.openshift.io/prowgen-controlled: "true"
+      ci-operator.openshift.io/variant: "4.6"
       pj-rehearse.openshift.io/can-be-rehearsed: "true"
-    name: pull-ci-openshift-tektoncd-pipeline-release-next-e2e-aws-ocp-42
+    name: pull-ci-openshift-tektoncd-pipeline-release-next-4.6-e2e
     path_alias: github.com/tektoncd/pipeline
-    rerun_command: /test e2e-aws-ocp-42
+    rerun_command: /test 4.6-e2e
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-next
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=tektoncd-pipeline
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --secret-dir=/usr/local/e2e-aws-ocp-42-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
-        - --target=e2e-aws-ocp-42
-        - --template=/usr/local/e2e-aws-ocp-42
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
+        - --secret-dir=/usr/local/e2e-cluster-profile
+        - --target=e2e
+        - --variant=4.6
         command:
         - ci-operator
-        env:
-        - name: CLUSTER_TYPE
-          value: aws
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-tektoncd-pipeline-release-next.yaml
-              name: ci-operator-misc-configs
-        - name: JOB_NAME_SAFE
-          value: e2e-aws-ocp-42
-        - name: TEST_COMMAND
-          value: make test-e2e
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -48,61 +35,66 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /usr/local/e2e-aws-ocp-42-cluster-profile
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
+        - mountPath: /usr/local/e2e-cluster-profile
           name: cluster-profile
-        - mountPath: /usr/local/e2e-aws-ocp-42
-          name: job-definition
-          subPath: cluster-launch-installer-src.yaml
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
           - secret:
               name: cluster-secrets-aws
-      - configMap:
-          name: prow-job-cluster-launch-installer-src
-        name: job-definition
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
-    trigger: (?m)^/test( | .* )e2e-aws-ocp-42,?($|\s.*)
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )4.6-e2e,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - release-next
-    context: ci/prow/images
+    cluster: build01
+    context: ci/prow/4.6-images
     decorate: true
     decoration_config:
       skip_cloning: true
     labels:
       ci-operator.openshift.io/prowgen-controlled: "true"
+      ci-operator.openshift.io/variant: "4.6"
       pj-rehearse.openshift.io/can-be-rehearsed: "true"
-    name: pull-ci-openshift-tektoncd-pipeline-release-next-images
+    name: pull-ci-openshift-tektoncd-pipeline-release-next-4.6-images
     path_alias: github.com/tektoncd/pipeline
-    rerun_command: /test images
+    rerun_command: /test 4.6-images
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-next
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=tektoncd-pipeline
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --report-credentials-file=/etc/report/credentials
         - --target=[images]
+        - --variant=4.6
         command:
         - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-tektoncd-pipeline-release-next.yaml
-              name: ci-operator-misc-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -110,58 +102,52 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
-    trigger: (?m)^/test( | .* )images,?($|\s.*)
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )4.6-images,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - release-next
-    context: ci/prow/variant-e2e-aws-ocp-43
+    cluster: build01
+    context: ci/prow/4.7-e2e
     decorate: true
     decoration_config:
       skip_cloning: true
     labels:
       ci-operator.openshift.io/prowgen-controlled: "true"
-      ci-operator.openshift.io/variant: variant
+      ci-operator.openshift.io/variant: "4.7"
       pj-rehearse.openshift.io/can-be-rehearsed: "true"
-    name: pull-ci-openshift-tektoncd-pipeline-release-next-variant-e2e-aws-ocp-43
+    name: pull-ci-openshift-tektoncd-pipeline-release-next-4.7-e2e
     path_alias: github.com/tektoncd/pipeline
-    rerun_command: /test variant-e2e-aws-ocp-43
+    rerun_command: /test 4.7-e2e
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-next
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=tektoncd-pipeline
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --secret-dir=/usr/local/e2e-aws-ocp-43-cluster-profile
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
-        - --target=e2e-aws-ocp-43
-        - --template=/usr/local/e2e-aws-ocp-43
-        - --variant=variant
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --lease-server-credentials-file=/etc/boskos/credentials
+        - --report-credentials-file=/etc/report/credentials
+        - --secret-dir=/usr/local/e2e-cluster-profile
+        - --target=e2e
+        - --variant=4.7
         command:
         - ci-operator
-        env:
-        - name: CLUSTER_TYPE
-          value: aws
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-tektoncd-pipeline-release-next__variant.yaml
-              name: ci-operator-misc-configs
-        - name: JOB_NAME_SAFE
-          value: e2e-aws-ocp-43
-        - name: TEST_COMMAND
-          value: make test-e2e
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -169,63 +155,66 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /usr/local/e2e-aws-ocp-43-cluster-profile
+        - mountPath: /etc/boskos
+          name: boskos
+          readOnly: true
+        - mountPath: /usr/local/e2e-cluster-profile
           name: cluster-profile
-        - mountPath: /usr/local/e2e-aws-ocp-43
-          name: job-definition
-          subPath: cluster-launch-installer-src.yaml
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
+      - name: boskos
+        secret:
+          items:
+          - key: credentials
+            path: credentials
+          secretName: boskos-credentials
       - name: cluster-profile
         projected:
           sources:
           - secret:
               name: cluster-secrets-aws
-      - configMap:
-          name: prow-job-cluster-launch-installer-src
-        name: job-definition
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
-    trigger: (?m)^/test( | .* )variant-e2e-aws-ocp-43,?($|\s.*)
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )4.7-e2e,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - release-next
-    context: ci/prow/variant-images
+    cluster: build01
+    context: ci/prow/4.7-images
     decorate: true
     decoration_config:
       skip_cloning: true
     labels:
       ci-operator.openshift.io/prowgen-controlled: "true"
-      ci-operator.openshift.io/variant: variant
+      ci-operator.openshift.io/variant: "4.7"
       pj-rehearse.openshift.io/can-be-rehearsed: "true"
-    name: pull-ci-openshift-tektoncd-pipeline-release-next-variant-images
+    name: pull-ci-openshift-tektoncd-pipeline-release-next-4.7-images
     path_alias: github.com/tektoncd/pipeline
-    rerun_command: /test variant-images
+    rerun_command: /test 4.7-images
     spec:
       containers:
       - args:
-        - --artifact-dir=$(ARTIFACTS)
-        - --branch=release-next
-        - --give-pr-author-access-to-namespace=true
-        - --org=openshift
-        - --repo=tektoncd-pipeline
-        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
-        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
+        - --gcs-upload-secret=/secrets/gcs/service-account.json
+        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
+        - --report-credentials-file=/etc/report/credentials
         - --target=[images]
-        - --variant=variant
+        - --variant=4.7
         command:
         - ci-operator
-        env:
-        - name: CONFIG_SPEC
-          valueFrom:
-            configMapKeyRef:
-              key: openshift-tektoncd-pipeline-release-next__variant.yaml
-              name: ci-operator-misc-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -233,12 +222,21 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /etc/sentry-dsn
-          name: sentry-dsn
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+          readOnly: true
+        - mountPath: /etc/pull-secret
+          name: pull-secret
+          readOnly: true
+        - mountPath: /etc/report
+          name: result-aggregator
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
-      - name: sentry-dsn
+      - name: pull-secret
         secret:
-          secretName: sentry-dsn
-    trigger: (?m)^/test( | .* )variant-images,?($|\s.*)
+          secretName: registry-pull-credentials
+      - name: result-aggregator
+        secret:
+          secretName: result-aggregator
+    trigger: (?m)^/test( | .* )4.7-images,?($|\s.*)

@@ -1,0 +1,255 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dex
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: cert-issuer
+  name: dex
+  namespace: dex
+spec:
+  tls:
+    - secretName: dex-tls
+      hosts:
+        - idp.ci.openshift.org
+  rules:
+  - host: idp.ci.openshift.org
+    http:
+      paths:
+      - backend:
+          service:
+            name: dex
+            port:
+              number: 80
+        pathType: ImplementationSpecific
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: dex
+  name: dex
+  namespace: dex
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: dex
+  template:
+    metadata:
+      labels:
+        app: dex
+      annotations:
+        config.yaml: |
+          issuer: https://idp.ci.openshift.org
+          storage:
+            type: kubernetes
+            config:
+              inCluster: true
+          web:
+            http: 0.0.0.0:8000
+          enablePasswordDB: false
+          oauth2:
+            skipApprovalScreen: true
+          connectors:
+          - type: oidc
+            id: sso
+            name: SSO
+            config:
+              issuer: https://auth.redhat.com/auth/realms/EmployeeIDP
+              clientID: $CLIENT_ID
+              clientSecret: $CLIENT_SECRET
+              redirectURI: https://idp.ci.openshift.org/callback
+              insecureSkipEmailVerified: true
+              getUserInfo: true
+              claimMapping:
+                preferred_username: preferred_username
+          staticClients:
+          - idEnv: BUILD01-ID
+            name: build01
+            secretEnv: BUILD01-SECRET
+            redirectURIs:
+            - https://oauth-openshift.apps.build01.ci.devcluster.openshift.com/oauth2callback/RedHat_Internal_SSO
+          - idEnv: BUILD02-ID
+            name: build02
+            secretEnv: BUILD02-SECRET
+            redirectURIs:
+            - https://oauth-openshift.apps.build02.gcp.ci.openshift.org/oauth2callback/RedHat_Internal_SSO
+          - idEnv: DPCR-ID
+            name: dpcr
+            secretEnv: DPCR-SECRET
+            redirectURIs:
+            - https://oauth-openshift.apps.cr.j7t7.p1.openshiftapps.com/oauth2callback/RedHat_Internal_SSO
+          - idEnv: VAULT_ID
+            name: vault
+            secretEnv: VAULT_SECRET
+            redirectURIs:
+            - https://vault.ci.openshift.org/ui/vault/auth/oidc/oidc/callback
+            - http://localhost:8250/oidc/callback
+          - idEnv: VAULT_SECRET_MANAGER_ID
+            name: vault-secret-manager
+            secretEnv: VAULT_SECRET_MANAGER_SECRET
+            redirectURIs:
+            -  https://selfservice.vault.ci.openshift.org/oauth2/callback
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - dex
+              topologyKey: "kubernetes.io/hostname"
+      serviceAccountName: dex
+      containers:
+      - image: ghcr.io/dexidp/dex:v2.27.0
+        name: dex
+        command: ["/usr/local/bin/dex", "serve", "/etc/dex/cfg/config.yaml"]
+        readinessProbe:
+          httpGet:
+            path: /.well-known/openid-configuration
+            port: 8000
+        env:
+        - name: PW
+          valueFrom:
+            secretKeyRef:
+              name: dex-static-user
+              key: pw
+        - name: BUILD01-SECRET
+          valueFrom:
+            secretKeyRef:
+              name: build01-secret
+              key: build01-secret
+        - name: BUILD01-ID
+          valueFrom:
+            secretKeyRef:
+              name: build01-secret
+              key: build01-id
+        - name: BUILD02-SECRET
+          valueFrom:
+            secretKeyRef:
+              name: build02-secret
+              key: build02-secret
+        - name: BUILD02-ID
+          valueFrom:
+            secretKeyRef:
+              name: build02-secret
+              key: build02-id
+        - name: DPCR-SECRET
+          valueFrom:
+            secretKeyRef:
+              name: dpcr-secret
+              key: dpcr-secret
+        - name: DPCR-ID
+          valueFrom:
+            secretKeyRef:
+              name: dpcr-secret
+              key: dpcr-id
+        - name: VAULT_ID
+          valueFrom:
+            secretKeyRef:
+              name: vault-secret
+              key: vault-id
+        - name: VAULT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: vault-secret
+              key: vault-secret
+        - name: VAULT_SECRET_MANAGER_ID
+          valueFrom:
+            secretKeyRef:
+              name: vault-secret-manager
+              key: vault-secret-manager-id
+        - name: VAULT_SECRET_MANAGER_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: vault-secret-manager
+              key: vault-secret-manager-secret
+        - name: CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: rh-sso
+              key: client-id
+        - name: CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: rh-sso
+              key: client-secret
+        ports:
+        - name: http
+          containerPort: 80
+        volumeMounts:
+        - name: config
+          mountPath: /etc/dex/cfg
+      volumes:
+      - name: config
+        downwardAPI:
+          items:
+          - path: config.yaml
+            fieldRef:
+              fieldPath: metadata.annotations['config.yaml']
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: dex
+  namespace: dex
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: dex
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dex
+  namespace: dex
+spec:
+  ports:
+  - name: dex
+    port: 80
+    protocol: TCP
+    targetPort: 8000
+  selector:
+    app: dex
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: dex
+  name: dex
+  namespace: dex
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: dex
+rules:
+- apiGroups: ["dex.coreos.com"] # API group created by dex
+  resources: ["*"]
+  verbs: ["*"]
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["create"] # To manage its own resources, dex must be able to create customresourcedefinitions
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: dex
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: dex
+subjects:
+- kind: ServiceAccount
+  name: dex
+  namespace: dex

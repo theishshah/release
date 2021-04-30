@@ -2,13 +2,25 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
+- benluddy
 - dinhxuanvu
 - ecordell
-- jpeeler
+- kevinrizza
 - njhale
 options: {}
 reviewers:
+- anik120
+- ankitathomas
+- awgreene
+- benluddy
 - dinhxuanvu
 - ecordell
-- jpeeler
+- estroz
+- exdx
+- gallettilance
+- hasbro17
+- jmrodri
+- joelanford
+- kevinrizza
 - njhale
+- timflannagan

@@ -4,6 +4,7 @@
 approvers:
 - deads2k
 - mfojtik
+- soltysh
 - sttts
 options: {}
 reviewers:
@@ -11,4 +12,3 @@ reviewers:
 - mfojtik
 - soltysh
 - sttts
-- tnozicka
