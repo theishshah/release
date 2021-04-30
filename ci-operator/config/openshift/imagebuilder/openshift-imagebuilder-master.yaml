@@ -1,19 +1,17 @@
+resources:
+  '*':
+    limits:
+      memory: 4Gi
+    requests:
+      cpu: 100m
+      memory: 200Mi
 build_root:
   image_stream_tag:
     name: release
     namespace: openshift
     tag: golang-1.10
-resources:
-  '*':
-    requests:
-      cpu: 100m
-      memory: 200Mi
 tests:
 - as: unit
   commands: make test
   container:
     from: src
-zz_generated_metadata:
-  branch: master
-  org: openshift
-  repo: imagebuilder

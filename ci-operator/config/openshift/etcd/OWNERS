@@ -1,8 +1,24 @@
+# DO NOT EDIT; this file is auto-generated using https://github.com/openshift/ci-tools.
+# See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
+
 approvers:
-- tnozicka
+- fanminshi
+- gyuho
 - hexfusion
-- deads2k
+- heyitsanthony
+- jpbetz
+- mitake
+- philips
+- xiang90
+options: {}
 reviewers:
-- tnozicka
+- fanminshi
+- gyuho
 - hexfusion
-- deads2k
+- heyitsanthony
+- jingyih
+- jpbetz
+- mitake
+- philips
+- wenjiaswe
+- xiang90

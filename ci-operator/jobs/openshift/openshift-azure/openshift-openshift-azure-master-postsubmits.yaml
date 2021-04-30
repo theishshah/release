@@ -3,7 +3,6 @@ postsubmits:
   - agent: kubernetes
     branches:
     - master
-    cluster: build02
     context: e2e
     decorate: true
     name: branch-ci-openshift-azure-master-e2e
@@ -14,20 +13,13 @@ postsubmits:
         env:
         - name: FOCUS
           value: \[EveryPR\]
-        image: registry.ci.openshift.org/azure/ci-base:latest
+        image: registry.svc.ci.openshift.org/azure/ci-base:latest
         name: ""
         resources: {}
-        volumeMounts:
-        - mountPath: /secrets
-          name: secrets
-      volumes:
-      - name: secrets
-        secret:
-          secretName: cluster-secrets-azure
+      serviceAccountName: ci-operator
   - agent: kubernetes
     branches:
     - master
-    cluster: build02
     context: unit
     decorate: true
     name: branch-ci-openshift-azure-master-unit
@@ -36,13 +28,13 @@ postsubmits:
       - args:
         - make
         - unit
-        image: registry.ci.openshift.org/azure/ci-base:latest
+        image: registry.svc.ci.openshift.org/azure/ci-base:latest
         name: ""
         resources: {}
+      serviceAccountName: ci-operator
   - agent: kubernetes
     branches:
     - master
-    cluster: build02
     context: verify
     decorate: true
     name: branch-ci-openshift-azure-master-verify
@@ -51,32 +43,39 @@ postsubmits:
       - args:
         - make
         - verify
-        image: registry.ci.openshift.org/azure/ci-base:latest
+        image: registry.svc.ci.openshift.org/azure/ci-base:latest
         name: ""
         resources: {}
+      serviceAccountName: ci-operator
   - agent: kubernetes
     branches:
     - ^master$
-    cluster: build02
     decorate: true
     decoration_config:
       skip_cloning: true
     labels:
-      ci-operator.openshift.io/is-promotion: "true"
       ci-operator.openshift.io/prowgen-controlled: "true"
-    max_concurrency: 1
     name: branch-ci-openshift-openshift-azure-master-images
     spec:
       containers:
       - args:
-        - --gcs-upload-secret=/secrets/gcs/service-account.json
-        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
-        - --image-mirror-push-secret=/etc/push-secret/.dockerconfigjson
+        - --artifact-dir=$(ARTIFACTS)
+        - --branch=master
+        - --give-pr-author-access-to-namespace=true
+        - --org=openshift
         - --promote
-        - --report-credentials-file=/etc/report/credentials
+        - --repo=openshift-azure
+        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
+        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=[images]
         command:
         - ci-operator
+        env:
+        - name: CONFIG_SPEC
+          valueFrom:
+            configMapKeyRef:
+              key: openshift-openshift-azure-master.yaml
+              name: ci-operator-master-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -84,26 +83,11 @@ postsubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /secrets/gcs
-          name: gcs-credentials
-          readOnly: true
-        - mountPath: /etc/pull-secret
-          name: pull-secret
-          readOnly: true
-        - mountPath: /etc/push-secret
-          name: push-secret
-          readOnly: true
-        - mountPath: /etc/report
-          name: result-aggregator
+        - mountPath: /etc/sentry-dsn
+          name: sentry-dsn
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
-      - name: pull-secret
+      - name: sentry-dsn
         secret:
-          secretName: registry-pull-credentials
-      - name: push-secret
-        secret:
-          secretName: registry-push-credentials-ci-central
-      - name: result-aggregator
-        secret:
-          secretName: result-aggregator
+          secretName: sentry-dsn

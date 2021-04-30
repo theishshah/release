@@ -1,6 +1,0 @@
-branch-protection:
-  orgs:
-    redhat-developer:
-      repos:
-        gitops-backend:
-          protect: false

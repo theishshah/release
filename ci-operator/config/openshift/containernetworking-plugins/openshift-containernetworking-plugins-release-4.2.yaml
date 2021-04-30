@@ -17,6 +17,8 @@ promotion:
   namespace: ocp
 resources:
   '*':
+    limits:
+      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -25,10 +27,6 @@ tag_specification:
   namespace: ocp
 tests:
 - as: e2e-aws
-  steps:
+  commands: TEST_SUITE=openshift/conformance/parallel run-tests
+  openshift_installer:
     cluster_profile: aws
-    workflow: openshift-e2e-aws
-zz_generated_metadata:
-  branch: release-4.2
-  org: openshift
-  repo: containernetworking-plugins

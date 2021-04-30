@@ -12,15 +12,27 @@ canonical_go_repository: github.com/kubernetes-incubator/external-storage
 images:
 - dockerfile_path: Dockerfile.snapshot-controller
   from: base
+  inputs:
+    root:
+      as:
+      - "0"
+      paths: null
   to: snapshot-controller
 - dockerfile_path: Dockerfile.snapshot-provisioner
   from: base
+  inputs:
+    root:
+      as:
+      - "0"
+      paths: null
   to: snapshot-provisioner
 promotion:
   name: "4.2"
   namespace: ocp
 resources:
   '*':
+    limits:
+      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -32,7 +44,3 @@ tests:
   commands: make test-snapshot
   container:
     from: src
-zz_generated_metadata:
-  branch: release-4.2
-  org: openshift
-  repo: external-storage

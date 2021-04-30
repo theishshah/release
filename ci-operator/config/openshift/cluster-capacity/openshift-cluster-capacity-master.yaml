@@ -1,73 +1,36 @@
 base_images:
   base:
-    name: "4.8"
+    name: "4.3"
     namespace: ocp
     tag: base
-  ocp_builder_golang-1.12:
-    name: builder
-    namespace: ocp
-    tag: golang-1.12
-  ocp_builder_golang-1.15:
-    name: builder
-    namespace: ocp
-    tag: golang-1.15
-  ocp_builder_rhel-8-golang-1.15-openshift-4.6:
-    name: builder
-    namespace: ocp
-    tag: rhel-8-golang-1.15-openshift-4.6
-  ocp_builder_rhel-8-golang-1.15-openshift-4.7:
-    name: builder
-    namespace: ocp
-    tag: rhel-8-golang-1.15-openshift-4.7
-  ocp_builder_rhel-8-golang-1.15-openshift-4.8:
-    name: builder
-    namespace: ocp
-    tag: rhel-8-golang-1.15-openshift-4.8
-  ocp_builder_rhel-8-golang-1.16-openshift-4.8:
-    name: builder
-    namespace: ocp
-    tag: rhel-8-golang-1.16-openshift-4.8
-  ocp_builder_rhel-8-golang-openshift-4.6:
-    name: builder
-    namespace: ocp
-    tag: rhel-8-golang-openshift-4.6
-  openshift_release_golang-1.15:
-    name: release
-    namespace: openshift
-    tag: golang-1.15
 binary_build_commands: make build
 build_root:
   image_stream_tag:
     name: release
     namespace: openshift
-    tag: golang-1.15
-canonical_go_repository: sigs.k8s.io/cluster-capacity
+    tag: golang-1.10
+canonical_go_repository: github.com/kubernetes-incubator/cluster-capacity
 images:
-- dockerfile_path: images/cluster-capacity/Dockerfile.rhel7
+- dockerfile_path: images/cluster-capacity/Dockerfile
   from: base
-  inputs:
-    ocp_builder_rhel-8-golang-1.16-openshift-4.8:
-      as:
-      - registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.16-openshift-4.8
   to: cluster-capacity
 promotion:
-  name: "4.8"
+  name: "4.3"
   namespace: ocp
 resources:
   '*':
+    limits:
+      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
 tag_specification:
-  name: "4.8"
+  name: "4.3"
   namespace: ocp
 test_binary_build_commands: OS_GOFLAGS='-race' make build
 tests:
-- as: unit
-  commands: make test
+- artifact_dir: /tmp/artifacts
+  as: unit
+  commands: ARTIFACT_DIR=/tmp/artifacts JUNIT_REPORT=1 hack/test-go.sh
   container:
     from: test-bin
-zz_generated_metadata:
-  branch: master
-  org: openshift
-  repo: cluster-capacity

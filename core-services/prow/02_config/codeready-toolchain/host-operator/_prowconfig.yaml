@@ -1,6 +1,0 @@
-branch-protection:
-  orgs:
-    codeready-toolchain:
-      repos:
-        host-operator:
-          protect: false

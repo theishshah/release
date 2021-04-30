@@ -1,6 +1,0 @@
-branch-protection:
-  orgs:
-    cri-o:
-      required_status_checks:
-        contexts:
-        - dco

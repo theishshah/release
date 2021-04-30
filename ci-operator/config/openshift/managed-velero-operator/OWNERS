@@ -2,10 +2,16 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
+- c-e-brumm
 - cblecker
-- luis-falcon
+- drewandersonnz
+- jewzaam
+- jharrington22
+- mwoodson
+- rira12621
+- rogbas
 options: {}
 reviewers:
 - cblecker
-- luis-falcon
-- yithian
+- jewzaam
+- mwoodson

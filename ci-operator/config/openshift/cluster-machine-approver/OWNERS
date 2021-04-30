@@ -2,17 +2,19 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
-- alexander-demichev
-- danil-grigorev
-- elmiko
+- bison
 - enxebre
-- joelspeed
+- frobware
+- ingvagabund
 - michaelgugino
+- spangenberg
+- vikaschoudhary16
 options: {}
 reviewers:
-- alexander-demichev
-- danil-grigorev
-- elmiko
+- bison
 - enxebre
-- joelspeed
+- frobware
+- ingvagabund
 - michaelgugino
+- spangenberg
+- vikaschoudhary16

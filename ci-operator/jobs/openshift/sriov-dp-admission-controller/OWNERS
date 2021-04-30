@@ -2,20 +2,20 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
-- billy99
 - dcbw
 - dougbtv
 - fepan
+- jeremyeder
 - s1061123
 - squeed
 - vpickard
 - zshi-redhat
 options: {}
 reviewers:
-- billy99
 - dcbw
 - dougbtv
 - fepan
+- jeremyeder
 - s1061123
 - squeed
 - vpickard

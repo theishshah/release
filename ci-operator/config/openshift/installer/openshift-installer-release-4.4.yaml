@@ -3,132 +3,109 @@ base_images:
     name: "4.4"
     namespace: ocp
     tag: base
-  dev-scripts:
-    name: test
-    namespace: ocp-kni
-    tag: dev-scripts
-  ocp_4.1_cli:
-    name: "4.1"
-    namespace: ocp
-    tag: cli
-  ocp_builder_golang-1.12:
-    name: builder
-    namespace: ocp
-    tag: golang-1.12
-  openshift_release_golang-1.12:
-    name: release
-    namespace: openshift
-    tag: golang-1.12
-  origin_4.2_cli:
-    name: "4.2"
-    namespace: origin
-    tag: cli
-  origin_4.4_cli:
-    name: "4.4"
-    namespace: origin
-    tag: cli
 build_root:
   image_stream_tag:
     name: release
     namespace: openshift
-    tag: golang-1.13
+    tag: golang-1.12
 images:
 - dockerfile_path: images/installer/Dockerfile.ci
   from: base
   inputs:
-    openshift_release_golang-1.12:
+    root:
       as:
-      - registry.svc.ci.openshift.org/openshift/release:golang-1.12
+      - build
+      paths: null
   to: installer
 - dockerfile_path: images/installer-artifacts/Dockerfile.rhel
   from: installer
   inputs:
-    ocp_builder_golang-1.12:
+    root:
       as:
-      - registry.svc.ci.openshift.org/ocp/builder:golang-1.12
+      - build
+      paths: null
   to: installer-artifacts
-- dockerfile_path: images/libvirt/Dockerfile.ci
+- dockerfile_path: images/nested-libvirt/Dockerfile
   from: base
   inputs:
-    openshift_release_golang-1.12:
+    root:
       as:
-      - registry.svc.ci.openshift.org/openshift/release:golang-1.12
+      - build
+      paths: null
   to: libvirt-installer
 - dockerfile_path: images/installer/Dockerfile.upi.ci
   from: base
   inputs:
-    ocp_4.1_cli:
+    root:
       as:
-      - registry.svc.ci.openshift.org/ocp/4.1:cli
-    ocp_builder_golang-1.12:
-      as:
-      - registry.svc.ci.openshift.org/ocp/builder:golang-1.12
+      - build
+      paths: null
   to: upi-installer
 - dockerfile_path: images/openstack/Dockerfile.ci
   from: base
   inputs:
-    openshift_release_golang-1.12:
+    root:
       as:
-      - registry.svc.ci.openshift.org/openshift/release:golang-1.12
-    origin_4.4_cli:
-      as:
-      - registry.svc.ci.openshift.org/origin/4.4:cli
+      - build
+      paths: null
   to: openstack-installer
 - dockerfile_path: images/baremetal/Dockerfile.ci
   from: base
   inputs:
-    openshift_release_golang-1.12:
+    root:
       as:
-      - registry.svc.ci.openshift.org/openshift/release:golang-1.12
+      - build
+      paths: null
   to: baremetal-installer
-- dockerfile_path: images/installer/Dockerfile.ci
-  from: base
-  inputs:
-    openshift_release_golang-1.12:
-      as:
-      - registry.svc.ci.openshift.org/openshift/release:golang-1.12
-  to: ovirt-installer
 promotion:
   name: "4.4"
   namespace: ocp
 resources:
   '*':
+    limits:
+      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
   baremetal-installer:
-    requests:
-      cpu: "3"
-      memory: 5Gi
-  govet:
+    limits:
+      memory: 9Gi
     requests:
       cpu: "3"
       memory: 5Gi
   installer:
+    limits:
+      memory: 9Gi
     requests:
       cpu: "3"
       memory: 5Gi
   installer-artifacts:
+    limits:
+      memory: 9Gi
     requests:
       cpu: "3"
       memory: 5Gi
   libvirt-installer:
+    limits:
+      memory: 9Gi
     requests:
       cpu: "3"
       memory: 5Gi
   openstack-installer:
-    requests:
-      cpu: "3"
-      memory: 5Gi
-  ovirt-installer:
+    limits:
+      memory: 9Gi
     requests:
       cpu: "3"
       memory: 5Gi
   unit:
+    limits:
+      memory: 9Gi
     requests:
       cpu: "3"
       memory: 5Gi
   upi-installer:
+    limits:
+      memory: 9Gi
     requests:
       cpu: "3"
       memory: 5Gi
@@ -158,69 +135,48 @@ tests:
   container:
     from: src
 - as: e2e-aws
-  steps:
+  commands: TEST_SUITE=openshift/conformance/parallel run-tests
+  openshift_installer:
     cluster_profile: aws
-    workflow: openshift-e2e-aws
 - as: e2e-gcp
-  steps:
+  commands: TEST_SUITE=openshift/conformance/parallel run-tests
+  openshift_installer:
     cluster_profile: gcp
-    workflow: openshift-e2e-gcp
 - as: e2e-azure
-  steps:
+  commands: TEST_SUITE=openshift/conformance/parallel run-tests
+  openshift_installer:
     cluster_profile: azure4
-    workflow: openshift-e2e-azure
 - as: e2e-aws-upgrade
-  steps:
+  commands: TEST_SUITE=all run-upgrade-tests
+  openshift_installer:
     cluster_profile: aws
-    workflow: openshift-upgrade-aws
+    upgrade: true
 - as: e2e-aws-upi
   commands: TEST_SUITE=openshift/conformance/parallel run-tests
   openshift_installer_upi:
     cluster_profile: aws
 - as: e2e-gcp-upi
-  steps:
+  commands: TEST_SUITE=openshift/conformance/parallel run-tests
+  openshift_installer_upi:
     cluster_profile: gcp
-    env:
-      TEST_SUITE: openshift/conformance/parallel
-    workflow: openshift-e2e-gcp-upi
-- as: e2e-aws-workers-rhel7
-  steps:
-    cluster_profile: aws
-    workflow: openshift-e2e-aws-workers-rhel7
+- as: e2e-aws-scaleup-rhel7
+  commands: TEST_SUITE=openshift/conformance/parallel run-tests
+  openshift_ansible_40:
+    cluster_profile: aws-centos-40
 - as: e2e-aws-disruptive
   commands: setup_ssh_bastion; TEST_SUITE=openshift/disruptive run-tests; TEST_SUITE=openshift/conformance/parallel
     run-tests
   openshift_installer:
     cluster_profile: aws
 - as: e2e-gcp-upgrade
-  steps:
+  commands: TEST_SUITE=all run-upgrade-tests
+  openshift_installer:
     cluster_profile: gcp
-    workflow: openshift-upgrade-gcp
+    upgrade: true
 - as: e2e-vsphere
-  steps:
+  commands: TEST_SUITE=openshift/conformance/parallel run-tests
+  openshift_installer_upi:
     cluster_profile: vsphere
-    workflow: openshift-e2e-vsphere-upi
-- as: e2e-metal-ipi
-  steps:
-    cluster_profile: packet
-    workflow: baremetalds-e2e
-- as: e2e-ovirt
-  steps:
-    cluster_profile: ovirt
-    workflow: openshift-e2e-ovirt-minimal-without-csi
-- as: e2e-aws-fips
-  steps:
-    cluster_profile: aws
-    env:
-      FIPS_ENABLED: "true"
-      TEST_SUITE: openshift/conformance/parallel
-    pre:
-    - chain: ipi-aws-pre
-    - ref: fips-check
-    test:
-    - ref: openshift-e2e-test
-    workflow: ipi-aws
-zz_generated_metadata:
-  branch: release-4.4
-  org: openshift
-  repo: installer
+- as: e2e
+  commands: TEST_SUITE=openshift/conformance/parallel run-tests
+  openshift_installer_random: {}

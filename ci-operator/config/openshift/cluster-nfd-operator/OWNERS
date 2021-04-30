@@ -2,14 +2,11 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
-- arangogutierrez
 - zvonkok
 options: {}
 reviewers:
-- arangogutierrez
-- dagrayvid
+- cep235
 - deepthidharwar
 - jmencak
-- kpouget
 - sjug
 - zvonkok

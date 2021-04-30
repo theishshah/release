@@ -1,8 +1,0 @@
-branch-protection:
-  orgs:
-    openshift:
-      repos:
-        jenkins-client-plugin:
-          restrictions:
-            teams:
-            - team-jenkins

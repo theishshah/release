@@ -2,16 +2,25 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
+- asalkeld
+- ehashman
 - jim-minter
+- kwoodson
 - mjudeikis
+labels:
+- sig/azure
 options: {}
 reviewers:
+- asalkeld
+- ehashman
+- gburges
 - grantomation
-- gvanderpotte
-- hawkowl
 - jim-minter
+- kwoodson
 - m1kola
 - makdaam
 - mjudeikis
-- nilsanderselde
+- olga-mir
+- pnasrat
+- thekad
 - troy0820

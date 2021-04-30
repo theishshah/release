@@ -2,19 +2,8 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
-- admbk
 - coverprice
 - dobbymoodge
-- jthiatt
-- sebwoj
 - stevekuznetsov
 - thrasher-redhat
 options: {}
-reviewers:
-- admbk
-- coverprice
-- dobbymoodge
-- jthiatt
-- sebwoj
-- stevekuznetsov
-- thrasher-redhat

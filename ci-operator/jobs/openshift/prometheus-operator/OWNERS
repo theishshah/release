@@ -2,19 +2,17 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
+- brancz
 - bwplotka
-- dgrisonnet
 - lilic
-- paulfantom
+- metalmatze
 - s-urbaniak
-- simonpasquier
 - squat
 options: {}
 reviewers:
+- brancz
 - bwplotka
-- dgrisonnet
 - lilic
-- paulfantom
+- metalmatze
 - s-urbaniak
-- simonpasquier
 - squat

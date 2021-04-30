@@ -1,6 +1,0 @@
-branch-protection:
-  orgs:
-    openshift-psap:
-      repos:
-        ci-artifacts:
-          protect: false

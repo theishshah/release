@@ -3,10 +3,6 @@ base_images:
     name: "4.3"
     namespace: ocp
     tag: base
-  openshift_release_golang-1.12:
-    name: release
-    namespace: openshift
-    tag: golang-1.12
 build_root:
   image_stream_tag:
     name: release
@@ -17,15 +13,19 @@ images:
 - dockerfile_path: Dockerfile.openshift
   from: base
   inputs:
-    openshift_release_golang-1.12:
+    root:
       as:
-      - registry.svc.ci.openshift.org/openshift/release:golang-1.12
+      - "0"
+      paths: null
   to: csi-livenessprobe
 promotion:
+  disabled: true
   name: "4.3"
   namespace: ocp
 resources:
   '*':
+    limits:
+      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -37,7 +37,3 @@ tests:
   commands: make test
   container:
     from: src
-zz_generated_metadata:
-  branch: release-4.3
-  org: openshift
-  repo: csi-livenessprobe

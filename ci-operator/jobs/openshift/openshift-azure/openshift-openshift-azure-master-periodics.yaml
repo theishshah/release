@@ -1,6 +1,5 @@
 periodics:
-- cluster: build01
-  decorate: true
+- decorate: true
   extra_refs:
   - base_ref: master
     org: openshift
@@ -11,18 +10,11 @@ periodics:
     containers:
     - args:
       - hack/periodic/content-update.sh
-      image: registry.ci.openshift.org/azure/ci-base:latest
+      image: registry.svc.ci.openshift.org/azure/ci-base:latest
       name: ""
       resources: {}
-      volumeMounts:
-      - mountPath: /secrets
-        name: secrets
-    volumes:
-    - name: secrets
-      secret:
-        secretName: cluster-secrets-azure
-- cluster: build01
-  decorate: true
+    serviceAccountName: ci-operator
+- decorate: true
   extra_refs:
   - base_ref: master
     org: openshift
@@ -38,18 +30,11 @@ periodics:
         value: \[ApplySecurityUpdates\]
       - name: TIMEOUT
         value: 120m
-      image: registry.ci.openshift.org/azure/ci-base:latest
+      image: registry.svc.ci.openshift.org/azure/ci-base:latest
       name: ""
       resources: {}
-      volumeMounts:
-      - mountPath: /secrets
-        name: secrets
-    volumes:
-    - name: secrets
-      secret:
-        secretName: cluster-secrets-azure
-- cluster: build01
-  decorate: true
+    serviceAccountName: ci-operator
+- decorate: true
   extra_refs:
   - base_ref: master
     org: openshift
@@ -65,18 +50,11 @@ periodics:
         value: \[ChangeLogLevel\]
       - name: TIMEOUT
         value: 90m
-      image: registry.ci.openshift.org/azure/ci-base:latest
+      image: registry.svc.ci.openshift.org/azure/ci-base:latest
       name: ""
       resources: {}
-      volumeMounts:
-      - mountPath: /secrets
-        name: secrets
-    volumes:
-    - name: secrets
-      secret:
-        secretName: cluster-secrets-azure
-- cluster: build01
-  decorate: true
+    serviceAccountName: ci-operator
+- decorate: true
   extra_refs:
   - base_ref: master
     org: openshift
@@ -90,18 +68,11 @@ periodics:
       env:
       - name: FOCUS
         value: \[EtcdBackupRecovery\]
-      image: registry.ci.openshift.org/azure/ci-base:latest
+      image: registry.svc.ci.openshift.org/azure/ci-base:latest
       name: ""
       resources: {}
-      volumeMounts:
-      - mountPath: /secrets
-        name: secrets
-    volumes:
-    - name: secrets
-      secret:
-        secretName: cluster-secrets-azure
-- cluster: build01
-  decorate: true
+    serviceAccountName: ci-operator
+- decorate: true
   extra_refs:
   - base_ref: master
     org: openshift
@@ -115,18 +86,11 @@ periodics:
       env:
       - name: FOCUS
         value: \[ForceUpdate\]
-      image: registry.ci.openshift.org/azure/ci-base:latest
+      image: registry.svc.ci.openshift.org/azure/ci-base:latest
       name: ""
       resources: {}
-      volumeMounts:
-      - mountPath: /secrets
-        name: secrets
-    volumes:
-    - name: secrets
-      secret:
-        secretName: cluster-secrets-azure
-- cluster: build01
-  decorate: true
+    serviceAccountName: ci-operator
+- decorate: true
   extra_refs:
   - base_ref: master
     org: openshift
@@ -140,18 +104,11 @@ periodics:
       env:
       - name: FOCUS
         value: \[KeyRotation\]
-      image: registry.ci.openshift.org/azure/ci-base:latest
+      image: registry.svc.ci.openshift.org/azure/ci-base:latest
       name: ""
       resources: {}
-      volumeMounts:
-      - mountPath: /secrets
-        name: secrets
-    volumes:
-    - name: secrets
-      secret:
-        secretName: cluster-secrets-azure
-- cluster: build01
-  decorate: true
+    serviceAccountName: ci-operator
+- decorate: true
   extra_refs:
   - base_ref: master
     org: openshift
@@ -165,18 +122,11 @@ periodics:
       env:
       - name: FOCUS
         value: \[ReimageVM\]
-      image: registry.ci.openshift.org/azure/ci-base:latest
+      image: registry.svc.ci.openshift.org/azure/ci-base:latest
       name: ""
       resources: {}
-      volumeMounts:
-      - mountPath: /secrets
-        name: secrets
-    volumes:
-    - name: secrets
-      secret:
-        secretName: cluster-secrets-azure
-- cluster: build01
-  decorate: true
+    serviceAccountName: ci-operator
+- decorate: true
   extra_refs:
   - base_ref: master
     org: openshift
@@ -190,18 +140,11 @@ periodics:
       env:
       - name: FOCUS
         value: \[ScaleUpDown\]
-      image: registry.ci.openshift.org/azure/ci-base:latest
+      image: registry.svc.ci.openshift.org/azure/ci-base:latest
       name: ""
       resources: {}
-      volumeMounts:
-      - mountPath: /secrets
-        name: secrets
-    volumes:
-    - name: secrets
-      secret:
-        secretName: cluster-secrets-azure
-- cluster: build01
-  decorate: true
+    serviceAccountName: ci-operator
+- decorate: true
   extra_refs:
   - base_ref: master
     org: openshift
@@ -213,18 +156,11 @@ periodics:
     - args:
       - make
       - vmimage
-      image: registry.ci.openshift.org/azure/ci-base:latest
+      image: registry.svc.ci.openshift.org/azure/ci-base:latest
       name: ""
       resources: {}
-      volumeMounts:
-      - mountPath: /secrets
-        name: secrets
-    volumes:
-    - name: secrets
-      secret:
-        secretName: cluster-secrets-azure
-- cluster: build01
-  decorate: true
+    serviceAccountName: ci-operator
+- decorate: true
   extra_refs:
   - base_ref: master
     org: openshift
@@ -241,13 +177,7 @@ periodics:
         value: osa_311
       - name: IMAGE_VERSION
         value: latest
-      image: registry.ci.openshift.org/azure/ci-base:latest
+      image: registry.svc.ci.openshift.org/azure/ci-base:latest
       name: ""
       resources: {}
-      volumeMounts:
-      - mountPath: /secrets
-        name: secrets
-    volumes:
-    - name: secrets
-      secret:
-        secretName: cluster-secrets-azure
+    serviceAccountName: ci-operator

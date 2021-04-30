@@ -3,25 +3,22 @@
 
 approvers:
 - baude
-- edsantiago
 - giuseppe
 - jwhonce
 - mheon
+- mrunalp
 - rhatdan
-- saschagrunert
 - tomsweeneyredhat
 - umohnani8
 - vrothberg
 options: {}
 reviewers:
 - baude
-- edsantiago
 - giuseppe
 - jwhonce
 - mheon
-- qiwang19
+- mrunalp
 - rhatdan
-- saschagrunert
 - tomsweeneyredhat
 - umohnani8
 - vrothberg

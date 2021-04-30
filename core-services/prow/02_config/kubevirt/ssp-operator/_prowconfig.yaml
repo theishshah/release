@@ -1,6 +1,0 @@
-branch-protection:
-  orgs:
-    kubevirt:
-      repos:
-        ssp-operator:
-          protect: false

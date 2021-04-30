@@ -1,8 +1,0 @@
-{
-	"path": "openshift/e2e/azure/sharednetwork/openshift-e2e-azure-sharednetwork-workflow.yaml",
-	"owners": {
-		"approvers": [
-			"abhinavdahiya"
-		]
-	}
-}

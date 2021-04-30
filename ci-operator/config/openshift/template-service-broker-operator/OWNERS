@@ -2,15 +2,27 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
-- camilamacedo86
+- djwhatle
+- djzager
+- dymurray
 - fabianvf
+- jmontleon
 - jmrodri
-- joelanford
+- johnkim76
+- jwmatthews
+- mhrivnak
+- rthallisey
 - shawn-hurley
 options: {}
 reviewers:
-- camilamacedo86
+- djwhatle
+- djzager
+- dymurray
 - fabianvf
+- jmontleon
 - jmrodri
-- joelanford
+- johnkim76
+- jwmatthews
+- mhrivnak
+- rthallisey
 - shawn-hurley

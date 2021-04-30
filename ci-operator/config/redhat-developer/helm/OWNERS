@@ -2,16 +2,17 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
-- avni-sharma
-- baijum
-- bamachrn
-- pedjak
+- otaviof
 - sbose78
+- bamachrn
 options: {}
 reviewers:
+- akashshinde
+- akram
 - avni-sharma
 - baijum
-- bamachrn
-- pedjak
-- pmacik
+- dhritishikhar
+- ldimaggi
+- otaviof
 - sbose78
+- waveywaves

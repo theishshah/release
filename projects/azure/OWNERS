@@ -1,14 +1,20 @@
 approvers:
+- asalkeld
+- ehashman
 - jim-minter
+- kwoodson
 - mjudeikis
 reviewers:
+- asalkeld
+- ehashman
+- gburges
 - grantomation
 - jim-minter
+- kwoodson
 - m1kola
 - makdaam
 - mjudeikis
+- thekad
 - troy0820
-- nilsanderselde
-- petrkotas
 labels:
 - sig/azure

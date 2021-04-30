@@ -1,6 +1,0 @@
-branch-protection:
-  orgs:
-    integr8ly:
-      repos:
-        grafana-operator:
-          protect: false

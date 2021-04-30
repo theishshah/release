@@ -79,8 +79,7 @@ aliases:
   - steveeJ
   - lucab
   - wking
-  - vrutkovs
-  - jottofar
+  - vrutkovs 
   cluster-api-admins:
   - justinsb
   - krousey
@@ -108,6 +107,7 @@ aliases:
   cluster-api-openstack-maintainers:
   - chaosaffe
   - dims
+  - flaper87
   - Lion-Wei
   - m1093782566
   eventing-approvers:
@@ -237,13 +237,6 @@ aliases:
   - vdemeester
   - evanchooly
   - arilivigni
-  ocm-cicd:
-  - arewm
-  - gurnben
-  - Kyl-Bempah
-  - ray-harris
-  - schmidtd
-  - smithbw88
   openshift-maintainers:
   - jsafrane
   - tsmetana
@@ -252,19 +245,10 @@ aliases:
   - childsb
   - bertinatto
   openstack-approvers:
-  - EmilienM
-  - Fedosin
-  - adduarte
-  - iamemilio
+  - hardys
   - mandre
-  - pierreprinetti
-  openstack-reviewers:
-  - EmilienM
-  - Fedosin
-  - adduarte
-  - iamemilio
-  - mandre
-  - pierreprinetti
+  - russellb
+  - tomassedovic
   productivity-approvers:
   - alanfx
   - mgencur
@@ -388,21 +372,3 @@ aliases:
   - bbguimaraes
   - droslean
   - hongkailiu
-  - alvaroaleman
-  ovirt-approvers:
-  - Gal-Zaidman
-  - eslutsky
-  ovirt-reviewers:
-  - Gal-Zaidman
-  - eslutsky
-  - rgolangh
-  - bennyz
-  - janoszen
-  - sandrobonazzola
-  - dougsland
-  technical-release-team:
-  - ravisantoshgudimetla
-  - joelsmith
-  - petr-muller
-  - dmage
-

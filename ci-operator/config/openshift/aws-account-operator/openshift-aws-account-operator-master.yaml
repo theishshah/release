@@ -1,8 +1,20 @@
+base_images:
+  base:
+    name: "4.3"
+    namespace: ocp
+    tag: base
 build_root:
-  from_repository: true
+  image_stream_tag:
+    name: release
+    namespace: openshift
+    tag: golang-1.10
 images:
 - dockerfile_path: build/Dockerfile
-  to: unused
+  from: base
+  to: aws-account-operator
+promotion:
+  name: "4.3"
+  namespace: ocp
 resources:
   '*':
     limits:
@@ -10,39 +22,6 @@ resources:
     requests:
       cpu: 100m
       memory: 200Mi
-tests:
-- as: coverage
-  commands: |
-    export CODECOV_TOKEN=$(cat /tmp/secret/CODECOV_TOKEN)
-    make coverage
-  container:
-    from: src
-  secret:
-    mount_path: /tmp/secret
-    name: aws-account-operator-codecov-token
-- as: publish-coverage
-  commands: |
-    export CODECOV_TOKEN=$(cat /tmp/secret/CODECOV_TOKEN)
-    make coverage
-  container:
-    from: src
-  postsubmit: true
-  secret:
-    mount_path: /tmp/secret
-    name: aws-account-operator-codecov-token
-- as: lint
-  commands: make lint
-  container:
-    from: src
-- as: test
-  commands: make test
-  container:
-    from: src
-- as: validate
-  commands: make validate
-  container:
-    from: src
-zz_generated_metadata:
-  branch: master
-  org: openshift
-  repo: aws-account-operator
+tag_specification:
+  name: "4.3"
+  namespace: ocp

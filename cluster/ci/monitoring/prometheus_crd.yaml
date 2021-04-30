@@ -1,0 +1,75 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: prow
+  namespace: prow-monitoring
+spec:
+  replicas: 2
+  storage:
+      volumeClaimTemplate:
+        metadata:
+          name: prometheus
+        spec:
+          accessModes:
+          - "ReadWriteOnce"
+          storageClassName: "standard"
+          resources:
+            requests:
+              storage: 100Gi
+  retention: "30d"
+  serviceAccountName: prometheus-prow
+  alerting:
+    alertmanagers:
+    - namespace: prow-monitoring
+      name: alertmanager
+      port: web
+  enableAdminAPI: false
+  ruleSelector:
+    matchLabels:
+      role: alert-rules
+      prometheus: prow
+  serviceMonitorSelector:
+    matchExpressions:
+    - key: prow-app
+      operator: Exists
+  version: v2.3.2
+  baseImage: openshift/prometheus
+  containers:
+  - args:
+    - -provider=openshift
+    - -https-address=:9091
+    - -http-address=
+    - -email-domain=*
+    - -upstream=http://localhost:9090
+    - -tls-cert=/etc/tls/private/tls.crt
+    - -tls-key=/etc/tls/private/tls.key
+    - -client-secret-file=/var/run/secrets/kubernetes.io/serviceaccount/token
+    - -cookie-secret-file=/etc/proxy/secrets/session_secret
+    - -openshift-service-account=prometheus-prow
+    - -openshift-ca=/etc/pki/tls/cert.pem
+    - -openshift-ca=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    - -skip-auth-regex=^/metrics
+    image: openshift/oauth-proxy:latest
+    name: prometheus-proxy
+    ports:
+    - containerPort: 9091
+      name: https
+    readinessProbe:
+      tcpSocket:
+        port: https
+    resources: {}
+    volumeMounts:
+    - mountPath: /etc/tls/private
+      name: secret-prometheus-tls
+    - mountPath: /etc/proxy/secrets
+      name: secret-prometheus-proxy
+  externalLabels:
+    cluster: api.ci.openshift.org
+  externalUrl: https://prometheus-prow-monitoring.svc.ci.openshift.org/
+  listenLocal: false
+  nodeSelector:
+    node-role.kubernetes.io/infra: "true"
+  secrets:
+  - prometheus-tls
+  - prometheus-proxy
+  securityContext: {}

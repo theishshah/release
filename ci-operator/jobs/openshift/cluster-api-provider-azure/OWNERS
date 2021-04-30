@@ -1,18 +1,20 @@
-# DO NOT EDIT; this file is auto-generated using https://github.com/openshift/ci-tools.
+# DO NOT EDIT; this file is auto-generated using tools/populate-owners.
+# from https://github.com/openshift/cluster-api-provider-azure/blob/35cc61a8e6081bccfbbd704c2e911d72809b8444/OWNERS
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
-- alexander-demichev
-- danil-grigorev
-- elmiko
 - enxebre
-- joelspeed
-- michaelgugino
-options: {}
+- frobware
+- ingvagabund
+- bison
 reviewers:
-- alexander-demichev
-- danil-grigorev
-- elmiko
 - enxebre
-- joelspeed
+- frobware
+- ingvagabund
+- bison
+- paulfantom
+- spangenberg
 - michaelgugino
+- serbrech
+- juan-lee
+- awesomenix

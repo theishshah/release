@@ -1,8 +1,6 @@
 approvers:
-- aliok
-- lberk
 - markusthoemmes
-- matzew
-- navidshaikh
-- rhuss
 - vdemeester
+- matzew
+- rhuss
+- navidshaikh

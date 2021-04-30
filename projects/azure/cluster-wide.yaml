@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: List
+items:
+- apiVersion: user.openshift.io/v1
+  kind: Group
+  metadata:
+    name: azure-team
+  users:
+  - asalkeld
+  - e-tienne
+  - ehashman
+  - gburges
+  - grantomation
+  - jim-minter
+  - kwoodson
+  - m1kola
+  - Makdaam
+  - mgahagan73
+  - mjudeikis
+  - olga-mir
+  - pnasrat
+  - thekad
+  - troy0820
+- apiVersion: user.openshift.io/v1
+  kind: Group
+  metadata:
+    name: azure-team-admins
+  users:
+  - jim-minter
+  - mjudeikis

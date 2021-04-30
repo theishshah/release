@@ -13,6 +13,8 @@ promotion:
   namespace: ocp
 resources:
   '*':
+    limits:
+      memory: 12Gi
     requests:
       cpu: "3"
       memory: 8Gi
@@ -26,12 +28,10 @@ tests:
     make verify
   container:
     from: src
-- as: unit
+- artifact_dir: /tmp/artifacts
+  as: unit
   commands: |
-    make test-unit JUNITFILE=${ARTIFACT_DIR}/junit_report.xml
+    mkdir -p /tmp/artifacts
+    make test-unit JUNITFILE=/tmp/artifacts/unit_report.xml
   container:
     from: src
-zz_generated_metadata:
-  branch: release-4.4
-  org: openshift
-  repo: runtime-utils

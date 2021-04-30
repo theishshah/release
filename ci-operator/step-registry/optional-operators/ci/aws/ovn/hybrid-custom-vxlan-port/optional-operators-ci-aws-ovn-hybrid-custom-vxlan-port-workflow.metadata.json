@@ -1,8 +1,0 @@
-{
-	"path": "optional-operators/ci/aws/ovn/hybrid-custom-vxlan-port/optional-operators-ci-aws-ovn-hybrid-custom-vxlan-port-workflow.yaml",
-	"owners": {
-		"approvers": [
-			"dptp"
-		]
-	}
-}

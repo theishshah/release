@@ -3,14 +3,9 @@
 
 approvers:
 - bertinatto
+- childsb
 - gnufied
-- huffmanca
 - jsafrane
 - tsmetana
+- wongma7
 options: {}
-reviewers:
-- bertinatto
-- gnufied
-- huffmanca
-- jsafrane
-- tsmetana

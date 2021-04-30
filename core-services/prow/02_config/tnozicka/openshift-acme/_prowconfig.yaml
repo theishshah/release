@@ -1,6 +1,0 @@
-branch-protection:
-  orgs:
-    tnozicka:
-      repos:
-        openshift-acme:
-          protect: false

@@ -7,11 +7,6 @@ base_images:
     name: release
     namespace: openshift
     tag: nodejs-8
-build_root:
-  image_stream_tag:
-    name: release
-    namespace: openshift
-    tag: golang-1.10
 images:
 - context_dir: fluentd/
   dockerfile_path: Dockerfile.centos7
@@ -33,22 +28,29 @@ images:
   dockerfile_path: Dockerfile.centos7
   from: base
   to: logging-eventrouter
-promotion:
-  name: origin-v3.11
-  namespace: openshift
 resources:
   '*':
+    limits:
+      memory: 5Gi
     requests:
-      cpu: "1"
+      cpu: '1'
       memory: 200Mi
   src:
+    limits:
+      memory: 2Gi
     requests:
       cpu: 100m
       memory: 200Mi
+promotion:
+  name: origin-v3.11
+  namespace: openshift
 tag_specification:
   name: origin-v3.11
   namespace: openshift
-zz_generated_metadata:
-  branch: release-3.11
-  org: openshift
-  repo: origin-aggregated-logging
+  tag: ''
+  tag_overrides: {}
+build_root:
+  image_stream_tag:
+    name: release
+    namespace: openshift
+    tag: golang-1.10

@@ -2,25 +2,16 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
-- abhat
 - danwinship
 - dcbw
-- fepan
 - knobunc
-- rcarrillocruz
 - squeed
-- trozet
 options: {}
 reviewers:
-- abhat
 - alexanderconstantinescu
-- aojea
-- danielmellado
 - danwinship
 - dcbw
 - jacobtanenbaum
-- juanluisvaladas
+- pecameron
 - rcarrillocruz
 - squeed
-- trozet
-- tssurya

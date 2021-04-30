@@ -1,14 +1,12 @@
 presubmits:
   openshift/openshift-ansible:
   - agent: kubernetes
-    always_run: false
+    always_run: true
     branches:
     - release-3.11
-    cluster: build01
     context: ci/prow/gcp-major-upgrade
     decorate: true
     name: pull-ci-openshift-openshift-ansible-3.11-gcp-major-upgrade
-    optional: true
     rerun_command: /test gcp-major-upgrade
     spec:
       containers:
@@ -16,7 +14,7 @@ presubmits:
         - |
           export PREVIOUS_RPM_REPO="$( curl -q "${PREVIOUS_RPM_REPO_BASEREF}" 2>/dev/null)"
           ci-operator \
-            --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson \
+            --artifact-dir=$(ARTIFACTS) \
             --secret-dir=/usr/local/e2e-gcp-cluster-profile \
             --template=/usr/local/e2e-gcp-major-upgrade-311 \
             --target=e2e-gcp-major-upgrade-311 \
@@ -27,6 +25,11 @@ presubmits:
         env:
         - name: CLUSTER_TYPE
           value: gcp
+        - name: CONFIG_SPEC
+          valueFrom:
+            configMapKeyRef:
+              key: openshift-openshift-ansible-release-3.11.yaml
+              name: ci-operator-3.x-configs
         - name: JOB_NAME_SAFE
           value: e2e-gcp-major-upgrade-311
         - name: PREVIOUS_ANSIBLE_VERSION
@@ -40,7 +43,7 @@ presubmits:
         - name: RPM_REPO_DEPENDENCIES
           value: http://mirror.centos.org/centos/7/paas/x86_64/openshift-origin311/
         - name: RPM_REPO_OPENSHIFT_ORIGIN
-          value: https://artifacts-rpms-openshift-origin-ci-rpms.apps.ci.l2s4.p1.openshiftapps.com/openshift-origin-v3.11/
+          value: https://rpms.svc.ci.openshift.org/openshift-origin-v3.11/
         - name: TEST_COMMAND
           value: TEST_FOCUS=Suite:openshift/conformance/parallel run-tests
         image: ci-operator:latest
@@ -55,9 +58,6 @@ presubmits:
         - mountPath: /usr/local/e2e-gcp-major-upgrade-311
           name: job-definition
           subPath: cluster-launch-e2e-upgrade.yaml
-        - mountPath: /etc/pull-secret
-          name: pull-secret
-          readOnly: true
       serviceAccountName: ci-operator
       volumes:
       - name: e2e-gcp-major-upgrade-311
@@ -70,15 +70,11 @@ presubmits:
       - configMap:
           name: prow-job-cluster-launch-e2e-upgrade
         name: job-definition
-      - name: pull-secret
-        secret:
-          secretName: registry-pull-credentials
     trigger: (?m)^/test( | .* )gcp-major-upgrade,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
     - release-3.11
-    cluster: build01
     context: ci/prow/e2e-atomic
     decorate: true
     decoration_config:
@@ -92,10 +88,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --gcs-upload-secret=/secrets/gcs/service-account.json
-        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
-        - --report-credentials-file=/etc/report/credentials
+        - --artifact-dir=$(ARTIFACTS)
+        - --branch=release-3.11
+        - --give-pr-author-access-to-namespace=true
+        - --org=openshift
+        - --repo=openshift-ansible
+        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
         - --secret-dir=/usr/local/e2e-atomic-cluster-profile
+        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-atomic
         - --template=/usr/local/e2e-atomic
         command:
@@ -103,10 +103,15 @@ presubmits:
         env:
         - name: CLUSTER_TYPE
           value: aws
+        - name: CONFIG_SPEC
+          valueFrom:
+            configMapKeyRef:
+              key: openshift-openshift-ansible-release-3.11.yaml
+              name: ci-operator-3.x-configs
         - name: JOB_NAME_SAFE
           value: e2e-atomic
         - name: RPM_REPO_OPENSHIFT_ORIGIN
-          value: https://artifacts-rpms-openshift-origin-ci-rpms.apps.ci.l2s4.p1.openshiftapps.com/openshift-origin-v3.11/
+          value: https://rpms.svc.ci.openshift.org/openshift-origin-v3.11/
         - name: TEST_COMMAND
           value: TEST_FOCUS=Suite:openshift/conformance/parallel/minimal TEST_SKIP='(\[local\]|\[templates\]|\[Feature:Router\]|Kubectl
             logs)' run-tests
@@ -119,17 +124,11 @@ presubmits:
         volumeMounts:
         - mountPath: /usr/local/e2e-atomic-cluster-profile
           name: cluster-profile
-        - mountPath: /secrets/gcs
-          name: gcs-credentials
-          readOnly: true
         - mountPath: /usr/local/e2e-atomic
           name: job-definition
           subPath: cluster-launch-e2e-openshift-ansible.yaml
-        - mountPath: /etc/pull-secret
-          name: pull-secret
-          readOnly: true
-        - mountPath: /etc/report
-          name: result-aggregator
+        - mountPath: /etc/sentry-dsn
+          name: sentry-dsn
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
@@ -143,18 +142,14 @@ presubmits:
       - configMap:
           name: prow-job-cluster-launch-e2e-openshift-ansible
         name: job-definition
-      - name: pull-secret
+      - name: sentry-dsn
         secret:
-          secretName: registry-pull-credentials
-      - name: result-aggregator
-        secret:
-          secretName: result-aggregator
+          secretName: sentry-dsn
     trigger: (?m)^/test( | .* )e2e-atomic,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - release-3.11
-    cluster: build01
     context: ci/prow/e2e-aws
     decorate: true
     decoration_config:
@@ -167,10 +162,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --gcs-upload-secret=/secrets/gcs/service-account.json
-        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
-        - --report-credentials-file=/etc/report/credentials
+        - --artifact-dir=$(ARTIFACTS)
+        - --branch=release-3.11
+        - --give-pr-author-access-to-namespace=true
+        - --org=openshift
+        - --repo=openshift-ansible
+        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
         - --secret-dir=/usr/local/e2e-aws-cluster-profile
+        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-aws
         - --template=/usr/local/e2e-aws
         command:
@@ -178,10 +177,15 @@ presubmits:
         env:
         - name: CLUSTER_TYPE
           value: aws
+        - name: CONFIG_SPEC
+          valueFrom:
+            configMapKeyRef:
+              key: openshift-openshift-ansible-release-3.11.yaml
+              name: ci-operator-3.x-configs
         - name: JOB_NAME_SAFE
           value: e2e-aws
         - name: RPM_REPO_OPENSHIFT_ORIGIN
-          value: https://artifacts-rpms-openshift-origin-ci-rpms.apps.ci.l2s4.p1.openshiftapps.com/openshift-origin-v3.11/
+          value: https://rpms.svc.ci.openshift.org/openshift-origin-v3.11/
         - name: TEST_COMMAND
           value: TEST_FOCUS=Suite:openshift/conformance/parallel/minimal TEST_SKIP='(\[local\]|\[templates\]|\[Feature:Router\]|Kubectl
             logs)' run-tests
@@ -194,17 +198,11 @@ presubmits:
         volumeMounts:
         - mountPath: /usr/local/e2e-aws-cluster-profile
           name: cluster-profile
-        - mountPath: /secrets/gcs
-          name: gcs-credentials
-          readOnly: true
         - mountPath: /usr/local/e2e-aws
           name: job-definition
           subPath: cluster-launch-e2e-openshift-ansible.yaml
-        - mountPath: /etc/pull-secret
-          name: pull-secret
-          readOnly: true
-        - mountPath: /etc/report
-          name: result-aggregator
+        - mountPath: /etc/sentry-dsn
+          name: sentry-dsn
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
@@ -218,18 +216,14 @@ presubmits:
       - configMap:
           name: prow-job-cluster-launch-e2e-openshift-ansible
         name: job-definition
-      - name: pull-secret
+      - name: sentry-dsn
         secret:
-          secretName: registry-pull-credentials
-      - name: result-aggregator
-        secret:
-          secretName: result-aggregator
+          secretName: sentry-dsn
     trigger: (?m)^/test( | .* )e2e-aws,?($|\s.*)
   - agent: kubernetes
-    always_run: false
+    always_run: true
     branches:
     - release-3.11
-    cluster: build01
     context: ci/prow/e2e-gcp
     decorate: true
     decoration_config:
@@ -242,10 +236,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --gcs-upload-secret=/secrets/gcs/service-account.json
-        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
-        - --report-credentials-file=/etc/report/credentials
+        - --artifact-dir=$(ARTIFACTS)
+        - --branch=release-3.11
+        - --give-pr-author-access-to-namespace=true
+        - --org=openshift
+        - --repo=openshift-ansible
+        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
         - --secret-dir=/usr/local/e2e-gcp-cluster-profile
+        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-gcp
         - --template=/usr/local/e2e-gcp
         command:
@@ -253,13 +251,17 @@ presubmits:
         env:
         - name: CLUSTER_TYPE
           value: gcp
+        - name: CONFIG_SPEC
+          valueFrom:
+            configMapKeyRef:
+              key: openshift-openshift-ansible-release-3.11.yaml
+              name: ci-operator-3.x-configs
         - name: JOB_NAME_SAFE
           value: e2e-gcp
         - name: RPM_REPO_OPENSHIFT_ORIGIN
-          value: https://artifacts-rpms-openshift-origin-ci-rpms.apps.ci.l2s4.p1.openshiftapps.com/openshift-origin-v3.11/
+          value: https://rpms.svc.ci.openshift.org/openshift-origin-v3.11/
         - name: TEST_COMMAND
-          value: TEST_FOCUS=Suite:openshift/conformance/parallel/minimal TEST_SKIP='(\[local\]|\[templates\]|\[Feature:Router\]|Kubectl
-            logs)' run-tests
+          value: TEST_FOCUS=Suite:openshift/conformance/parallel run-tests
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -269,17 +271,11 @@ presubmits:
         volumeMounts:
         - mountPath: /usr/local/e2e-gcp-cluster-profile
           name: cluster-profile
-        - mountPath: /secrets/gcs
-          name: gcs-credentials
-          readOnly: true
         - mountPath: /usr/local/e2e-gcp
           name: job-definition
           subPath: cluster-launch-e2e.yaml
-        - mountPath: /etc/pull-secret
-          name: pull-secret
-          readOnly: true
-        - mountPath: /etc/report
-          name: result-aggregator
+        - mountPath: /etc/sentry-dsn
+          name: sentry-dsn
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
@@ -293,18 +289,14 @@ presubmits:
       - configMap:
           name: prow-job-cluster-launch-e2e
         name: job-definition
-      - name: pull-secret
+      - name: sentry-dsn
         secret:
-          secretName: registry-pull-credentials
-      - name: result-aggregator
-        secret:
-          secretName: result-aggregator
+          secretName: sentry-dsn
     trigger: (?m)^/test( | .* )e2e-gcp,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
     - release-3.11
-    cluster: build01
     context: ci/prow/e2e-gcp-crio
     decorate: true
     decoration_config:
@@ -319,10 +311,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --gcs-upload-secret=/secrets/gcs/service-account.json
-        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
-        - --report-credentials-file=/etc/report/credentials
+        - --artifact-dir=$(ARTIFACTS)
+        - --branch=release-3.11
+        - --give-pr-author-access-to-namespace=true
+        - --org=openshift
+        - --repo=openshift-ansible
+        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
         - --secret-dir=/usr/local/e2e-gcp-crio-cluster-profile
+        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-gcp-crio
         - --template=/usr/local/e2e-gcp-crio
         command:
@@ -330,10 +326,15 @@ presubmits:
         env:
         - name: CLUSTER_TYPE
           value: gcp
+        - name: CONFIG_SPEC
+          valueFrom:
+            configMapKeyRef:
+              key: openshift-openshift-ansible-release-3.11.yaml
+              name: ci-operator-3.x-configs
         - name: JOB_NAME_SAFE
           value: e2e-gcp-crio
         - name: RPM_REPO_OPENSHIFT_ORIGIN
-          value: https://artifacts-rpms-openshift-origin-ci-rpms.apps.ci.l2s4.p1.openshiftapps.com/openshift-origin-v3.11/
+          value: https://rpms.svc.ci.openshift.org/openshift-origin-v3.11/
         - name: TEST_COMMAND
           value: TEST_FOCUS=Suite:openshift/conformance/parallel/minimal run-tests
         image: ci-operator:latest
@@ -345,17 +346,11 @@ presubmits:
         volumeMounts:
         - mountPath: /usr/local/e2e-gcp-crio-cluster-profile
           name: cluster-profile
-        - mountPath: /secrets/gcs
-          name: gcs-credentials
-          readOnly: true
         - mountPath: /usr/local/e2e-gcp-crio
           name: job-definition
           subPath: cluster-launch-e2e.yaml
-        - mountPath: /etc/pull-secret
-          name: pull-secret
-          readOnly: true
-        - mountPath: /etc/report
-          name: result-aggregator
+        - mountPath: /etc/sentry-dsn
+          name: sentry-dsn
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
@@ -369,18 +364,14 @@ presubmits:
       - configMap:
           name: prow-job-cluster-launch-e2e
         name: job-definition
-      - name: pull-secret
+      - name: sentry-dsn
         secret:
-          secretName: registry-pull-credentials
-      - name: result-aggregator
-        secret:
-          secretName: result-aggregator
+          secretName: sentry-dsn
     trigger: (?m)^/test( | .* )e2e-gcp-crio,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
     - release-3.11
-    cluster: build01
     context: ci/prow/e2e-gcp-ha
     decorate: true
     decoration_config:
@@ -394,10 +385,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --gcs-upload-secret=/secrets/gcs/service-account.json
-        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
-        - --report-credentials-file=/etc/report/credentials
+        - --artifact-dir=$(ARTIFACTS)
+        - --branch=release-3.11
+        - --give-pr-author-access-to-namespace=true
+        - --org=openshift
+        - --repo=openshift-ansible
+        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
         - --secret-dir=/usr/local/e2e-gcp-ha-cluster-profile
+        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-gcp-ha
         - --template=/usr/local/e2e-gcp-ha
         command:
@@ -405,10 +400,15 @@ presubmits:
         env:
         - name: CLUSTER_TYPE
           value: gcp
+        - name: CONFIG_SPEC
+          valueFrom:
+            configMapKeyRef:
+              key: openshift-openshift-ansible-release-3.11.yaml
+              name: ci-operator-3.x-configs
         - name: JOB_NAME_SAFE
           value: e2e-gcp-ha
         - name: RPM_REPO_OPENSHIFT_ORIGIN
-          value: https://artifacts-rpms-openshift-origin-ci-rpms.apps.ci.l2s4.p1.openshiftapps.com/openshift-origin-v3.11/
+          value: https://rpms.svc.ci.openshift.org/openshift-origin-v3.11/
         - name: TEST_COMMAND
           value: TEST_FOCUS=Suite:openshift/conformance/parallel run-tests
         image: ci-operator:latest
@@ -420,17 +420,11 @@ presubmits:
         volumeMounts:
         - mountPath: /usr/local/e2e-gcp-ha-cluster-profile
           name: cluster-profile
-        - mountPath: /secrets/gcs
-          name: gcs-credentials
-          readOnly: true
         - mountPath: /usr/local/e2e-gcp-ha
           name: job-definition
           subPath: cluster-launch-e2e.yaml
-        - mountPath: /etc/pull-secret
-          name: pull-secret
-          readOnly: true
-        - mountPath: /etc/report
-          name: result-aggregator
+        - mountPath: /etc/sentry-dsn
+          name: sentry-dsn
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
@@ -444,18 +438,88 @@ presubmits:
       - configMap:
           name: prow-job-cluster-launch-e2e
         name: job-definition
-      - name: pull-secret
+      - name: sentry-dsn
         secret:
-          secretName: registry-pull-credentials
-      - name: result-aggregator
-        secret:
-          secretName: result-aggregator
+          secretName: sentry-dsn
     trigger: (?m)^/test( | .* )e2e-gcp-ha,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
     - release-3.11
-    cluster: build01
+    context: ci/prow/e2e-gcp-launch
+    decorate: true
+    decoration_config:
+      skip_cloning: true
+    labels:
+      ci-operator.openshift.io/prowgen-controlled: "true"
+      pj-rehearse.openshift.io/can-be-rehearsed: "true"
+    name: pull-ci-openshift-openshift-ansible-release-3.11-e2e-gcp-launch
+    optional: true
+    rerun_command: /test e2e-gcp-launch
+    spec:
+      containers:
+      - args:
+        - --artifact-dir=$(ARTIFACTS)
+        - --branch=release-3.11
+        - --give-pr-author-access-to-namespace=true
+        - --org=openshift
+        - --repo=openshift-ansible
+        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
+        - --secret-dir=/usr/local/e2e-gcp-launch-cluster-profile
+        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
+        - --target=e2e-gcp-launch
+        - --template=/usr/local/e2e-gcp-launch
+        command:
+        - ci-operator
+        env:
+        - name: CLUSTER_TYPE
+          value: gcp
+        - name: CONFIG_SPEC
+          valueFrom:
+            configMapKeyRef:
+              key: openshift-openshift-ansible-release-3.11.yaml
+              name: ci-operator-3.x-configs
+        - name: JOB_NAME_SAFE
+          value: e2e-gcp-launch
+        - name: RPM_REPO_OPENSHIFT_ORIGIN
+          value: https://rpms.svc.ci.openshift.org/openshift-origin-v3.11/
+        - name: TEST_COMMAND
+          value: sleep 7200 & wait
+        image: ci-operator:latest
+        imagePullPolicy: Always
+        name: ""
+        resources:
+          requests:
+            cpu: 10m
+        volumeMounts:
+        - mountPath: /usr/local/e2e-gcp-launch-cluster-profile
+          name: cluster-profile
+        - mountPath: /usr/local/e2e-gcp-launch
+          name: job-definition
+          subPath: cluster-launch-e2e.yaml
+        - mountPath: /etc/sentry-dsn
+          name: sentry-dsn
+          readOnly: true
+      serviceAccountName: ci-operator
+      volumes:
+      - name: cluster-profile
+        projected:
+          sources:
+          - secret:
+              name: cluster-secrets-gcp
+          - configMap:
+              name: cluster-profile-gcp
+      - configMap:
+          name: prow-job-cluster-launch-e2e
+        name: job-definition
+      - name: sentry-dsn
+        secret:
+          secretName: sentry-dsn
+    trigger: (?m)^/test( | .* )e2e-gcp-launch,?($|\s.*)
+  - agent: kubernetes
+    always_run: false
+    branches:
+    - release-3.11
     context: ci/prow/e2e-gcp-logging
     decorate: true
     decoration_config:
@@ -469,10 +533,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --gcs-upload-secret=/secrets/gcs/service-account.json
-        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
-        - --report-credentials-file=/etc/report/credentials
+        - --artifact-dir=$(ARTIFACTS)
+        - --branch=release-3.11
+        - --give-pr-author-access-to-namespace=true
+        - --org=openshift
+        - --repo=openshift-ansible
+        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
         - --secret-dir=/usr/local/e2e-gcp-logging-cluster-profile
+        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-gcp-logging
         - --template=/usr/local/e2e-gcp-logging
         command:
@@ -480,10 +548,15 @@ presubmits:
         env:
         - name: CLUSTER_TYPE
           value: gcp
+        - name: CONFIG_SPEC
+          valueFrom:
+            configMapKeyRef:
+              key: openshift-openshift-ansible-release-3.11.yaml
+              name: ci-operator-3.x-configs
         - name: JOB_NAME_SAFE
           value: e2e-gcp-logging
         - name: RPM_REPO_OPENSHIFT_ORIGIN
-          value: https://artifacts-rpms-openshift-origin-ci-rpms.apps.ci.l2s4.p1.openshiftapps.com/openshift-origin-v3.11/
+          value: https://rpms.svc.ci.openshift.org/openshift-origin-v3.11/
         - name: TEST_COMMAND
           value: TEST_FOCUS=Suite:openshift/conformance/parallel run-tests
         image: ci-operator:latest
@@ -495,17 +568,11 @@ presubmits:
         volumeMounts:
         - mountPath: /usr/local/e2e-gcp-logging-cluster-profile
           name: cluster-profile
-        - mountPath: /secrets/gcs
-          name: gcs-credentials
-          readOnly: true
         - mountPath: /usr/local/e2e-gcp-logging
           name: job-definition
           subPath: cluster-launch-e2e.yaml
-        - mountPath: /etc/pull-secret
-          name: pull-secret
-          readOnly: true
-        - mountPath: /etc/report
-          name: result-aggregator
+        - mountPath: /etc/sentry-dsn
+          name: sentry-dsn
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
@@ -519,18 +586,14 @@ presubmits:
       - configMap:
           name: prow-job-cluster-launch-e2e
         name: job-definition
-      - name: pull-secret
+      - name: sentry-dsn
         secret:
-          secretName: registry-pull-credentials
-      - name: result-aggregator
-        secret:
-          secretName: result-aggregator
+          secretName: sentry-dsn
     trigger: (?m)^/test( | .* )e2e-gcp-logging,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
     - release-3.11
-    cluster: build01
     context: ci/prow/e2e-gluster
     decorate: true
     decoration_config:
@@ -544,10 +607,14 @@ presubmits:
     spec:
       containers:
       - args:
-        - --gcs-upload-secret=/secrets/gcs/service-account.json
-        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
-        - --report-credentials-file=/etc/report/credentials
+        - --artifact-dir=$(ARTIFACTS)
+        - --branch=release-3.11
+        - --give-pr-author-access-to-namespace=true
+        - --org=openshift
+        - --repo=openshift-ansible
+        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
         - --secret-dir=/usr/local/e2e-gluster-cluster-profile
+        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=e2e-gluster
         - --template=/usr/local/e2e-gluster
         command:
@@ -555,10 +622,15 @@ presubmits:
         env:
         - name: CLUSTER_TYPE
           value: aws
+        - name: CONFIG_SPEC
+          valueFrom:
+            configMapKeyRef:
+              key: openshift-openshift-ansible-release-3.11.yaml
+              name: ci-operator-3.x-configs
         - name: JOB_NAME_SAFE
           value: e2e-gluster
         - name: RPM_REPO_OPENSHIFT_ORIGIN
-          value: https://artifacts-rpms-openshift-origin-ci-rpms.apps.ci.l2s4.p1.openshiftapps.com/openshift-origin-v3.11/
+          value: https://rpms.svc.ci.openshift.org/openshift-origin-v3.11/
         - name: TEST_COMMAND
           value: TEST_FOCUS=Suite:openshift/conformance/parallel/minimal TEST_SKIP='(\[local\]|\[templates\]|\[Feature:Router\]|Kubectl
             logs)' run-tests
@@ -571,17 +643,11 @@ presubmits:
         volumeMounts:
         - mountPath: /usr/local/e2e-gluster-cluster-profile
           name: cluster-profile
-        - mountPath: /secrets/gcs
-          name: gcs-credentials
-          readOnly: true
         - mountPath: /usr/local/e2e-gluster
           name: job-definition
           subPath: cluster-launch-e2e-openshift-ansible.yaml
-        - mountPath: /etc/pull-secret
-          name: pull-secret
-          readOnly: true
-        - mountPath: /etc/report
-          name: result-aggregator
+        - mountPath: /etc/sentry-dsn
+          name: sentry-dsn
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
@@ -595,18 +661,14 @@ presubmits:
       - configMap:
           name: prow-job-cluster-launch-e2e-openshift-ansible
         name: job-definition
-      - name: pull-secret
+      - name: sentry-dsn
         secret:
-          secretName: registry-pull-credentials
-      - name: result-aggregator
-        secret:
-          secretName: result-aggregator
+          secretName: sentry-dsn
     trigger: (?m)^/test( | .* )e2e-gluster,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - release-3.11
-    cluster: build01
     context: ci/prow/images
     decorate: true
     decoration_config:
@@ -619,12 +681,22 @@ presubmits:
     spec:
       containers:
       - args:
-        - --gcs-upload-secret=/secrets/gcs/service-account.json
-        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
-        - --report-credentials-file=/etc/report/credentials
+        - --artifact-dir=$(ARTIFACTS)
+        - --branch=release-3.11
+        - --give-pr-author-access-to-namespace=true
+        - --org=openshift
+        - --repo=openshift-ansible
+        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
+        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=[images]
         command:
         - ci-operator
+        env:
+        - name: CONFIG_SPEC
+          valueFrom:
+            configMapKeyRef:
+              key: openshift-openshift-ansible-release-3.11.yaml
+              name: ci-operator-3.x-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -632,29 +704,19 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /secrets/gcs
-          name: gcs-credentials
-          readOnly: true
-        - mountPath: /etc/pull-secret
-          name: pull-secret
-          readOnly: true
-        - mountPath: /etc/report
-          name: result-aggregator
+        - mountPath: /etc/sentry-dsn
+          name: sentry-dsn
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
-      - name: pull-secret
+      - name: sentry-dsn
         secret:
-          secretName: registry-pull-credentials
-      - name: result-aggregator
-        secret:
-          secretName: result-aggregator
+          secretName: sentry-dsn
     trigger: (?m)^/test( | .* )images,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
     - release-3.11
-    cluster: build01
     context: ci/prow/unit
     decorate: true
     decoration_config:
@@ -667,12 +729,22 @@ presubmits:
     spec:
       containers:
       - args:
-        - --gcs-upload-secret=/secrets/gcs/service-account.json
-        - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
-        - --report-credentials-file=/etc/report/credentials
+        - --artifact-dir=$(ARTIFACTS)
+        - --branch=release-3.11
+        - --give-pr-author-access-to-namespace=true
+        - --org=openshift
+        - --repo=openshift-ansible
+        - --resolver-address=http://ci-operator-configresolver-ci.svc.ci.openshift.org
+        - --sentry-dsn-path=/etc/sentry-dsn/ci-operator
         - --target=unit
         command:
         - ci-operator
+        env:
+        - name: CONFIG_SPEC
+          valueFrom:
+            configMapKeyRef:
+              key: openshift-openshift-ansible-release-3.11.yaml
+              name: ci-operator-3.x-configs
         image: ci-operator:latest
         imagePullPolicy: Always
         name: ""
@@ -680,23 +752,14 @@ presubmits:
           requests:
             cpu: 10m
         volumeMounts:
-        - mountPath: /secrets/gcs
-          name: gcs-credentials
-          readOnly: true
-        - mountPath: /etc/pull-secret
-          name: pull-secret
-          readOnly: true
-        - mountPath: /etc/report
-          name: result-aggregator
+        - mountPath: /etc/sentry-dsn
+          name: sentry-dsn
           readOnly: true
       serviceAccountName: ci-operator
       volumes:
-      - name: pull-secret
+      - name: sentry-dsn
         secret:
-          secretName: registry-pull-credentials
-      - name: result-aggregator
-        secret:
-          secretName: result-aggregator
+          secretName: sentry-dsn
     trigger: (?m)^/test( | .* )unit,?($|\s.*)
   - agent: jenkins
     always_run: false

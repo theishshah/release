@@ -10,8 +10,6 @@ approvers:
 - hardys
 - juliakreger
 - russellb
-- stbenjam
-- zaneb
 options: {}
 reviewers:
 - bfournie
@@ -22,4 +20,3 @@ reviewers:
 - hardys
 - juliakreger
 - russellb
-- zaneb

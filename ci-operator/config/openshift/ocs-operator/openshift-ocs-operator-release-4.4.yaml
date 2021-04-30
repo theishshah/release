@@ -56,19 +56,25 @@ images:
       - destination_dir: must-gather
         source_path: /go/src/github.com/openshift/ocs-operator/must-gather/Dockerfile
       - destination_dir: .
+        source_path: /go/src/github.com/openshift/ocs-operator/must-gather/Centos-Base.repo
+      - destination_dir: .
         source_path: /go/src/github.com/openshift/ocs-operator/must-gather/collection-scripts
       - destination_dir: .
         source_path: /go/src/github.com/openshift/ocs-operator/must-gather/templates
   to: ocs-must-gather-quay
 promotion:
+  additional_images:
+    ocs-operator-tests: src
   excluded_images:
   - ocs-operator
   - operator-registry-base
   - ocs-registry
-  name: ocs-4.4
+  name: "ocs-4.4"
   namespace: ocp
 resources:
   '*':
+    limits:
+      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -82,32 +88,12 @@ tests:
   container:
     from: src
 - as: ocs-operator-e2e-aws
-  steps:
+  commands: |
+    make functest
+  openshift_installer_src:
     cluster_profile: aws
-    test:
-    - as: test
-      cli: latest
-      commands: |
-        make functest
-      from: src
-      resources:
-        requests:
-          cpu: 100m
-    workflow: ipi-aws
 - as: red-hat-storage-ocs-ci-e2e-aws
-  steps:
+  commands: |
+    export REDHAT_OCS_CI_FORCE_TOOL_POD_INSTALL="true" && make cluster-deploy && make red-hat-storage-ocs-ci
+  openshift_installer_src:
     cluster_profile: aws
-    test:
-    - as: test
-      cli: latest
-      commands: |
-        export REDHAT_OCS_CI_FORCE_TOOL_POD_INSTALL="true" && make cluster-deploy && make red-hat-storage-ocs-ci
-      from: src
-      resources:
-        requests:
-          cpu: 100m
-    workflow: ipi-aws
-zz_generated_metadata:
-  branch: release-4.4
-  org: openshift
-  repo: ocs-operator

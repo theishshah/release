@@ -1,8 +1,7 @@
 approvers:
-- technical-release-team
+- bbguimaraes
+- droslean
+- hongkailiu
+- petr-muller
 - smarterclayton
-reviewers:
-- technical-release-team
-- smarterclayton
-- wking
-- vrutkovs
+- stevekuznetsov

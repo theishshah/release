@@ -1,8 +1,0 @@
-branch-protection:
-  orgs:
-    openshift-s2i:
-      repos:
-        s2i-wildfly:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci/pr

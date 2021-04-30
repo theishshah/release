@@ -3,10 +3,6 @@ base_images:
     name: "4.3"
     namespace: ocp
     tag: base
-  openshift_release_golang-1.10:
-    name: release
-    namespace: openshift
-    tag: golang-1.10
 build_root:
   image_stream_tag:
     name: release
@@ -14,23 +10,18 @@ build_root:
     tag: golang-1.10
 images:
 - from: base
-  inputs:
-    openshift_release_golang-1.10:
-      as:
-      - registry.svc.ci.openshift.org/openshift/release:golang-1.10
   to: node-problem-detector-operator
 promotion:
+  disabled: true
   name: "4.3"
   namespace: ocp
 resources:
   '*':
+    limits:
+      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
 tag_specification:
   name: "4.3"
   namespace: ocp
-zz_generated_metadata:
-  branch: release-4.3
-  org: openshift
-  repo: node-problem-detector-operator

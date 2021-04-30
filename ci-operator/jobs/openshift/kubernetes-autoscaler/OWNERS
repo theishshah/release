@@ -2,15 +2,12 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
-- alexander-demichev
-- elmiko
+- bison
 - enxebre
 - frobware
-- joelspeed
+- ingvagabund
 options: {}
 reviewers:
-- alexander-demichev
-- elmiko
-- enxebre
-- frobware
-- joelspeed
+- paulfantom
+- spangenberg
+- vikaschoudhary16

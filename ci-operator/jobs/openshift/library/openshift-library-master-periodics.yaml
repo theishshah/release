@@ -1,13 +1,12 @@
 periodics:
 - agent: kubernetes
-  cluster: app.ci
   decorate: true
   extra_refs:
   - base_ref: master
     org: openshift
     repo: library
     workdir: true
-  interval: 15m
+  interval: 24h
   labels:
     ci.openshift.io/role: infra
   name: periodic-openshift-library-import
@@ -23,8 +22,14 @@ periodics:
         # redirect to devnull so this doesn't print the value of $TOKEN on failure.
         git remote add pushtarget https://openshift-merge-robot:$TOKEN@github.com/openshift/library &> /dev/null
         git checkout -b import
-        go run main.go import --config configs/cluster-samples-operator-periodic.yaml
-        git status
+        python ./import_content.py --tags arch_x86_64 --dir arch/x86_64
+        python ./import_content.py --tags arch_ppc64le --dir arch/ppc64le
+        python ./import_content.py --match-all-tags okd,arch_x86_64 -d operator/okd-x86_64
+        python ./import_content.py --match-all-tags ocp,arch_x86_64 -d operator/ocp-x86_64
+        python ./import_content.py --match-all-tags ocp,arch_ppc64le -d operator/ocp-ppc64le
+        python ./import_content.py --match-all-tags online-starter,arch_x86_64 -d online/starter/x86_64
+        python ./import_content.py --match-all-tags online-professional,arch_x86_64 -d online/professional/x86_64
+        python ./import_content.py
         if [[ -n "$(git status --porcelain)" ]] ; then
           echo "Committing and pushing new changes"
           git add -A ./community ./official ./arch ./operator ./online
@@ -38,7 +43,7 @@ periodics:
           secretKeyRef:
             key: oauth
             name: github-credentials-openshift-merge-robot
-      image: registry.ci.openshift.org/openshift/release:golang-1.13
+      image: quay.io/bparees/importer:latest
       imagePullPolicy: Always
       name: ""
       resources:

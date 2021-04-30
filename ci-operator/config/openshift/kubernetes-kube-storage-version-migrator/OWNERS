@@ -2,12 +2,7 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
+- caesarxuchao
 - deads2k
-- sanchezl
-- sttts
+- lavalamp
 options: {}
-reviewers:
-- deads2k
-- p0lyn0mial
-- sanchezl
-- sttts

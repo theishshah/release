@@ -6,13 +6,5 @@ approvers:
 - csrwng
 - dgoodwin
 - joelddiaz
-- staebler
 - twiest
 options: {}
-reviewers:
-- abutcher
-- csrwng
-- dgoodwin
-- joelddiaz
-- staebler
-- twiest

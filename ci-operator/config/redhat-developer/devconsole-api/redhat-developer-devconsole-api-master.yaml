@@ -1,23 +1,27 @@
+
 base_images:
   os:
     name: centos
     namespace: openshift
-    tag: "7"
-binary_build_commands: make build
+    tag: '7'
+
+resources:
+  '*':
+    limits:
+      memory: 3Gi
+    requests:
+      memory: 250Mi
+      cpu: 100m
+
+    
 build_root:
   project_image:
     dockerfile_path: openshift-ci/Dockerfile.tools
-resources:
-  '*':
-    requests:
-      cpu: 100m
-      memory: 250Mi
+
+binary_build_commands: make build
+
 tests:
 - as: build
   commands: make build
   container:
     from: src
-zz_generated_metadata:
-  branch: master
-  org: redhat-developer
-  repo: devconsole-api

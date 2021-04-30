@@ -1,6 +1,0 @@
-chain:
-  as: osd-delete
-  steps:
-  - ref: osd-delete-delete
-  documentation: |-
-    Uses ocm to delete a cluster from an OSD environment.

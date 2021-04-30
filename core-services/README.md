@@ -1,8 +1,16 @@
 # Core Services and Configuration
 
-_Only `core-services/secrets` folder is applied to the cluster api.ci._
+Manifests for important services (like [OpenShift CI cluster](https://api.ci.openshift.org/)
+and the CI service components that run on it) are present in this directory. The
+services configured here are critical for some part of the OpenShift project
+development workflow, must meet basic quality criteria and must be deployed to
+the cluster automatically by a postsubmit job.
 
-Except [user secret management](https://docs.ci.openshift.org/docs/how-tos/adding-a-new-secret-to-ci/), no services are running on `api.ci`.
+## How to add new service
+
+Create a new directory for your service, containing all [necessary files](#quality-criteria-and-conventions).
+You may copy the `_TEMPLATE` directory and start using the files there. Add
+manifests and other configuration as needed.
 
 ## Quality criteria and conventions
 
@@ -28,24 +36,27 @@ rely on a currently set OpenShift project.
 
 ## How to apply
 
-There are two types of configuration: resources and ConfigMaps.
+There are three types of configuration: admin resources, other resources and
+ConfigMaps.
 
 ### Automation
 
-1. Everything is automatically applied to the cluster by a prow
-   [postsubmit](https://prow.ci.openshift.org/?job=branch-ci-openshift-release-master-core-apply)
-   after each PR is merged, and also [periodically](https://prow.ci.openshift.org/?job=openshift-release-master-core-apply).
-1. ConfigMaps are automatically updated by the `config-updater` Prow plugin,
+1. Admin resources are not automatically applied to the cluster.
+2. Other resources are automatically applied to the cluster by a Prow
+   [postsubmit](https://prow.svc.ci.openshift.org/?job=branch-ci-openshift-release-master-core-apply)
+   after each PR is merged, and also [periodically](https://prow.svc.ci.openshift.org/?job=openshift-release-master-core-apply).
+3. ConfigMaps are automatically updated by the `config-updater` Prow plugin,
    configured in its [config.yaml](02_config/_config.yaml) file.
-   Additionally, they are [periodically](https://prow.ci.openshift.org/?job=openshift-release-master-config-bootstrapper)
+   Additionally, they are [periodically](https://prow.svc.ci.openshift.org/?job=openshift-release-master-config-bootstrapper)
    synced by a Prow job.
-
 
 ### Manual
 
-1. Resources can be created by `make core`, provided the user has rights
+1. Admin resources can be created by users with `--as=system:admin` rights by
+   `make core-admin`.
+2. Other resources can be created by `make core`, provided the user has rights
    to perform all necessary actions
-1. ConfigMaps can be manually created by the [config-bootstrapper](https://github.com/kubernetes/test-infra/tree/master/prow/cmd/config-bootstrapper)
+3. ConfigMaps can be manually created by the [config-bootstrapper](https://github.com/kubernetes/test-infra/tree/master/prow/cmd/config-bootstrapper)
    tool.
 
 Additionally, the [`applyconfig`](https://github.com/openshift/ci-tools/tree/master/cmd/applyconfig) can be used directly.

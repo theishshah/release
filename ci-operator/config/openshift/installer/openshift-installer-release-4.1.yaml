@@ -3,22 +3,6 @@ base_images:
     name: "4.1"
     namespace: ocp
     tag: base
-  ocp_4.1_cli:
-    name: "4.1"
-    namespace: ocp
-    tag: cli
-  ocp_builder_golang-1.10:
-    name: builder
-    namespace: ocp
-    tag: golang-1.10
-  openshift_origin-v4.0_cli:
-    name: origin-v4.0
-    namespace: openshift
-    tag: cli
-  openshift_release_golang-1.10:
-    name: release
-    namespace: openshift
-    tag: golang-1.10
 build_root:
   image_stream_tag:
     name: release
@@ -28,44 +12,43 @@ images:
 - dockerfile_path: images/installer/Dockerfile.ci
   from: base
   inputs:
-    openshift_release_golang-1.10:
+    root:
       as:
-      - registry.svc.ci.openshift.org/openshift/release:golang-1.10
+      - build
+      paths: null
   to: installer
 - dockerfile_path: images/installer-artifacts/Dockerfile.rhel
   from: installer
   inputs:
-    ocp_builder_golang-1.10:
+    root:
       as:
-      - registry.svc.ci.openshift.org/ocp/builder:golang-1.10
+      - build
+      paths: null
   to: installer-artifacts
 - dockerfile_path: images/nested-libvirt/Dockerfile
   from: base
   inputs:
-    openshift_release_golang-1.10:
+    root:
       as:
-      - registry.svc.ci.openshift.org/openshift/release:golang-1.10
+      - build
+      paths: null
   optional: true
   to: libvirt-installer
 - dockerfile_path: images/installer/Dockerfile.upi.ci
   from: base
   inputs:
-    ocp_4.1_cli:
+    root:
       as:
-      - registry.svc.ci.openshift.org/ocp/4.1:cli
-    ocp_builder_golang-1.10:
-      as:
-      - registry.svc.ci.openshift.org/ocp/builder:golang-1.10
+      - build
+      paths: null
   to: upi-installer
 - dockerfile_path: images/openstack/Dockerfile.ci
   from: base
   inputs:
-    openshift_origin-v4.0_cli:
+    root:
       as:
-      - registry.svc.ci.openshift.org/openshift/origin-v4.0:cli
-    openshift_release_golang-1.10:
-      as:
-      - registry.svc.ci.openshift.org/openshift/release:golang-1.10
+      - build
+      paths: null
   optional: true
   to: openstack-installer
 promotion:
@@ -73,30 +56,44 @@ promotion:
   namespace: ocp
 resources:
   '*':
+    limits:
+      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
   installer:
+    limits:
+      memory: 9Gi
     requests:
       cpu: "3"
       memory: 5Gi
   installer-artifacts:
+    limits:
+      memory: 9Gi
     requests:
       cpu: "3"
       memory: 5Gi
   libvirt-installer:
+    limits:
+      memory: 9Gi
     requests:
       cpu: "3"
       memory: 5Gi
   openstack-installer:
+    limits:
+      memory: 9Gi
     requests:
       cpu: "3"
       memory: 5Gi
   unit:
+    limits:
+      memory: 9Gi
     requests:
       cpu: "3"
       memory: 5Gi
   upi-installer:
+    limits:
+      memory: 9Gi
     requests:
       cpu: "3"
       memory: 5Gi
@@ -126,28 +123,23 @@ tests:
   container:
     from: src
 - as: e2e-aws
-  steps:
+  commands: TEST_SUITE=openshift/conformance/parallel run-tests
+  openshift_installer:
     cluster_profile: aws
-    workflow: openshift-e2e-aws
 - as: e2e-aws-upgrade
-  steps:
+  commands: TEST_SUITE=all run-upgrade-tests
+  openshift_installer:
     cluster_profile: aws
-    workflow: openshift-upgrade-aws
+    upgrade: true
 - as: e2e-aws-upi
   commands: TEST_SUITE=openshift/conformance/parallel run-tests
   openshift_installer_upi:
     cluster_profile: aws
-- as: e2e-aws-workers-rhel7
-  steps:
-    cluster_profile: aws
-    workflow: openshift-e2e-aws-workers-rhel7
+- as: e2e-aws-scaleup-rhel7
+  commands: TEST_SUITE=openshift/conformance/parallel run-tests
+  openshift_ansible_40:
+    cluster_profile: aws-centos-40
 - as: e2e-vsphere
-  steps:
+  commands: TEST_SUITE=openshift/conformance/parallel run-tests
+  openshift_installer_upi:
     cluster_profile: vsphere
-    env:
-      TEST_SUITE: openshift/conformance/parallel
-    workflow: openshift-e2e-vsphere-upi
-zz_generated_metadata:
-  branch: release-4.1
-  org: openshift
-  repo: installer

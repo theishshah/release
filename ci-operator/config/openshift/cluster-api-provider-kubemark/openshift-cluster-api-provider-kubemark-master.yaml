@@ -1,36 +1,30 @@
 base_images:
   base:
-    name: "4.8"
+    name: "4.3"
     namespace: ocp
     tag: base
-  openshift_release_golang-1.10:
-    name: release
-    namespace: openshift
-    tag: golang-1.10
 binary_build_commands: NO_DOCKER=1 make build
 build_root:
   image_stream_tag:
     name: release
     namespace: openshift
-    tag: golang-1.13
+    tag: golang-1.12
 images:
 - dockerfile_path: Dockerfile
   from: base
-  inputs:
-    openshift_release_golang-1.10:
-      as:
-      - registry.svc.ci.openshift.org/openshift/release:golang-1.10
   to: kubemark-machine-controllers
 promotion:
-  name: "4.8"
+  name: "4.3"
   namespace: ocp
 resources:
   '*':
+    limits:
+      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
 tag_specification:
-  name: "4.8"
+  name: "4.3"
   namespace: ocp
 tests:
 - as: unit
@@ -49,7 +43,3 @@ tests:
   commands: IS_CONTAINER=TRUE make lint
   container:
     from: src
-zz_generated_metadata:
-  branch: master
-  org: openshift
-  repo: cluster-api-provider-kubemark

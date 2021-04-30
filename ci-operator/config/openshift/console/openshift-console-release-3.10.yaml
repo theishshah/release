@@ -1,0 +1,34 @@
+base_images:
+  base:
+    name: origin-v3.10
+    namespace: openshift
+    tag: base
+resources:
+  '*':
+    limits:
+      memory: 4Gi
+    requests:
+      cpu: 100m
+      memory: 200Mi
+tag_specification:
+  name: origin-v3.10
+  namespace: openshift
+  tag: ''
+  tag_overrides: {}
+build_root:
+  image_stream_tag:
+    name: release
+    namespace: openshift
+    tag: tectonic-console-builder
+test_binary_build_commands: ./build.sh
+tests:
+- artifact_dir: /tmp/artifacts
+  as: backend
+  commands: export ARTIFACT_DIR=/tmp/artifacts; ./test-backend.sh
+  container:
+    from: test-bin
+- artifact_dir: /tmp/artifacts
+  as: frontend
+  commands: export ARTIFACT_DIR=/tmp/artifacts; ./test-frontend.sh
+  container:
+    from: test-bin

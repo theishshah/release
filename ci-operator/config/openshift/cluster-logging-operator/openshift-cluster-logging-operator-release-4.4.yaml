@@ -3,27 +3,21 @@ base_images:
     name: "4.4"
     namespace: ocp
     tag: base
-  openshift_release_golang-1.12:
-    name: release
-    namespace: openshift
-    tag: golang-1.12
 build_root:
   image_stream_tag:
     name: release
     namespace: openshift
-    tag: golang-1.12
+    tag: golang-1.10
 images:
 - from: base
-  inputs:
-    openshift_release_golang-1.12:
-      as:
-      - registry.svc.ci.openshift.org/openshift/release:golang-1.12
   to: cluster-logging-operator
 promotion:
   name: "4.4"
   namespace: ocp
 resources:
   '*':
+    limits:
+      memory: 4Gi
     requests:
       cpu: 200m
       memory: 200Mi
@@ -36,18 +30,6 @@ tests:
   container:
     from: src
 - as: e2e-operator
-  steps:
+  commands: make test-e2e
+  openshift_installer_src:
     cluster_profile: aws
-    test:
-    - as: test
-      cli: latest
-      commands: make test-e2e
-      from: src
-      resources:
-        requests:
-          cpu: 100m
-    workflow: ipi-aws
-zz_generated_metadata:
-  branch: release-4.4
-  org: openshift
-  repo: cluster-logging-operator

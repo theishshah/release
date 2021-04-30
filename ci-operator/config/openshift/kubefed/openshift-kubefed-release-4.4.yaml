@@ -13,6 +13,8 @@ promotion:
   namespace: ocp
 resources:
   '*':
+    limits:
+      memory: 8Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -35,7 +37,3 @@ tests:
     make -f openshift/Makefile.ci managed-e2e
   container:
     from: src
-zz_generated_metadata:
-  branch: release-4.4
-  org: openshift
-  repo: kubefed

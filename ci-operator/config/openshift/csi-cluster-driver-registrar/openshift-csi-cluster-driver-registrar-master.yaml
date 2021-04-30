@@ -1,12 +1,8 @@
 base_images:
   base:
-    name: "4.8"
+    name: "4.3"
     namespace: ocp
     tag: base
-  openshift_release_golang-1.11:
-    name: release
-    namespace: openshift
-    tag: golang-1.11
 build_root:
   image_stream_tag:
     name: release
@@ -17,27 +13,26 @@ images:
 - dockerfile_path: Dockerfile.openshift
   from: base
   inputs:
-    openshift_release_golang-1.11:
+    root:
       as:
-      - registry.svc.ci.openshift.org/openshift/release:golang-1.11
+      - "0"
+      paths: null
   to: csi-cluster-driver-registrar
 promotion:
-  name: "4.8"
+  name: "4.3"
   namespace: ocp
 resources:
   '*':
+    limits:
+      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
 tag_specification:
-  name: "4.8"
+  name: "4.3"
   namespace: ocp
 tests:
 - as: unit
   commands: make test
   container:
     from: src
-zz_generated_metadata:
-  branch: master
-  org: openshift
-  repo: csi-cluster-driver-registrar

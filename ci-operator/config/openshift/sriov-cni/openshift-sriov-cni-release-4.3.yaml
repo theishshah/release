@@ -3,10 +3,6 @@ base_images:
     name: "4.3"
     namespace: ocp
     tag: base
-  ocp_builder_golang-1.10:
-    name: builder
-    namespace: ocp
-    tag: golang-1.10
 build_root:
   image_stream_tag:
     name: release
@@ -15,16 +11,15 @@ build_root:
 images:
 - dockerfile_path: Dockerfile.rhel7
   from: base
-  inputs:
-    ocp_builder_golang-1.10:
-      as:
-      - registry.svc.ci.openshift.org/ocp/builder:golang-1.10
   to: sriov-cni
 promotion:
+  disabled: true
   name: "4.3"
   namespace: ocp
 resources:
   '*':
+    limits:
+      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -33,10 +28,6 @@ tag_specification:
   namespace: ocp
 tests:
 - as: e2e-aws
-  steps:
+  commands: TEST_SUITE=openshift/conformance/parallel run-tests
+  openshift_installer:
     cluster_profile: aws
-    workflow: openshift-e2e-aws
-zz_generated_metadata:
-  branch: release-4.3
-  org: openshift
-  repo: sriov-cni

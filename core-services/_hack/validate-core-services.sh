@@ -5,16 +5,14 @@ set -euo pipefail
 
 function validate_required_files() {
     local service_path="$1"
-    has_err=false
     for required in OWNERS README.md; do
         local required_path="$service_path/$required"
         if [[ ! -s "$required_path" ]]; then
             echo "ERROR: $required file not found: $required_path"
             echo "ERROR: All core services should have $required file"
-            has_err=true
+            return 1
         fi
     done
-    if [[ $has_err = true ]]; then return 1; fi
 
     return 0
 }

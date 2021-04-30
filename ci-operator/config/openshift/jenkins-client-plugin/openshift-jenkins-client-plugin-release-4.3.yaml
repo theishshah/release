@@ -18,12 +18,15 @@ images:
         source_path: /go/src/github.com/openshift/jenkins-client-plugin/.
   to: jenkins
 promotion:
+  disabled: true
   excluded_images:
   - jenkins
   name: "4.3"
   namespace: ocp
 resources:
   '*':
+    limits:
+      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -32,10 +35,6 @@ tag_specification:
   namespace: ocp
 tests:
 - as: e2e-aws-jenkins
-  steps:
+  commands: TEST_SUITE=openshift/jenkins-e2e run-tests
+  openshift_installer:
     cluster_profile: aws
-    workflow: openshift-e2e-aws-jenkins
-zz_generated_metadata:
-  branch: release-4.3
-  org: openshift
-  repo: jenkins-client-plugin

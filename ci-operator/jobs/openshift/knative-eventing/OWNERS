@@ -2,23 +2,33 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
+- alanconway
 - alanfx
-- aliok
-- devguyio
+- arilivigni
+- bbrowning
+- bobmcwhirter
+- evanchooly
 - jcrossley3
 - lberk
 - markusthoemmes
 - matzew
 - mgencur
-- skonto
+- mvinkler
+- syedriko
+- vdemeester
 options: {}
 reviewers:
+- alanconway
 - alanfx
-- aliok
-- devguyio
+- arilivigni
+- bbrowning
+- bobmcwhirter
+- evanchooly
 - jcrossley3
 - lberk
 - markusthoemmes
 - matzew
 - mgencur
-- skonto
+- mvinkler
+- syedriko
+- vdemeester

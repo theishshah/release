@@ -3,24 +3,18 @@
 
 approvers:
 - alanfx
-- aliok
+- bbrowning
 - jcrossley3
 - markusthoemmes
-- matzew
 - mgencur
-- rhuss
+- vdemeester
 - warrenvw
 options: {}
 reviewers:
 - alanfx
-- aliok
-- devguyio
-- dsimansk
+- bbrowning
 - jcrossley3
-- lberk
 - markusthoemmes
-- matzew
 - mgencur
-- rhuss
-- skonto
+- vdemeester
 - warrenvw

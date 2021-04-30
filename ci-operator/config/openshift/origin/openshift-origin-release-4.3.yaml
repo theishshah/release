@@ -19,10 +19,6 @@ base_images:
     name: "4.3"
     namespace: ocp
     tag: oc-rpms
-  ocp_builder_golang-1.12:
-    name: builder
-    namespace: ocp
-    tag: golang-1.12
 binary_build_commands: make build WHAT='vendor/k8s.io/kubernetes/cmd/hyperkube'
 build_root:
   image_stream_tag:
@@ -33,16 +29,18 @@ images:
 - dockerfile_path: images/hyperkube/Dockerfile.rhel
   from: base
   inputs:
-    ocp_builder_golang-1.12:
+    bin:
       as:
       - registry.svc.ci.openshift.org/ocp/builder:golang-1.12
+      paths: null
   to: hyperkube
 - dockerfile_path: images/tests/Dockerfile.rhel
   from: cli
   inputs:
-    ocp_builder_golang-1.12:
+    bin:
       as:
       - registry.svc.ci.openshift.org/ocp/builder:golang-1.12
+      paths: null
   to: tests
 - context_dir: images/os/
   from: base
@@ -50,13 +48,16 @@ images:
     base-machine-with-rpms:
       as:
       - fedora:29
+      paths: null
     machine-os-content-base:
       as:
       - registry.svc.ci.openshift.org/openshift/origin-v4.0:machine-os-content
+      paths: null
   to: machine-os-content
 promotion:
   additional_images:
     artifacts: artifacts
+  disabled: true
   excluded_images:
   - machine-os-content
   name: "4.3"
@@ -64,7 +65,7 @@ promotion:
 raw_steps:
 - pipeline_image_cache_step:
     commands: |
-      mkdir -p _output/local/releases; touch _output/local/releases/CHECKSUM; echo $'FROM bin AS bin\nFROM rpms AS rpms\nFROM centos:7 \nCOPY --from=bin /go/src/github.com/openshift/origin/_output/local/releases /srv/zips/ \nCOPY --from=oc-rpms /go/src/github.com/openshift/oc/_rpmbuild/SOURCES/ /srv/zips/ \nCOPY --from=rpms /go/src/github.com/openshift/origin/_output/local/releases/rpms/ /srv/repo/ \nCOPY --from=oc-rpms /go/src/github.com/openshift/oc/_rpmbuild/RPMS/x86_64/ /srv/repo/ ' > _output/local/releases/Dockerfile; make build-cross;
+      mkdir -p _output/local/releases; touch _output/local/releases/CHECKSUM; echo $'FROM bin AS bin\nFROM rpms AS rpms\nFROM centos:7 \nCOPY --from=bin /go/src/github.com/openshift/origin/_output/local/releases /srv/zips/ \nCOPY --from=oc-rpms /go/src/github.com/openshift/oc/_rpmbuild/SOURCES/* /srv/zips/ \nCOPY --from=rpms /go/src/github.com/openshift/origin/_output/local/releases/rpms/* /srv/repo/ \nCOPY --from=oc-rpms /go/src/github.com/openshift/oc/_rpmbuild/RPMS/x86_64/* /srv/repo/ ' > _output/local/releases/Dockerfile; make build-cross;
     from: bin
     to: bin-cross
 - project_directory_image_build_step:
@@ -79,10 +80,13 @@ raw_steps:
       oc-rpms:
         as:
         - oc-rpms
+        paths: null
       rpms:
         as:
         - rpms
-      src: {}
+        paths: null
+      src:
+        paths: null
     optional: true
     to: artifacts
 - output_image_tag_step:
@@ -100,54 +104,80 @@ raw_steps:
     to: base-machine-with-rpms
 resources:
   '*':
+    limits:
+      memory: 8Gi
     requests:
       cpu: 100m
       memory: 4Gi
   artifacts:
+    limits:
+      memory: 1Gi
     requests:
       cpu: 100m
       memory: 100Mi
   bin:
+    limits:
+      memory: 12Gi
     requests:
       cpu: "3"
       memory: 7Gi
   bin-cross:
+    limits:
+      memory: 12Gi
     requests:
       cpu: "3"
       memory: 8Gi
   cmd:
+    limits:
+      memory: 11Gi
     requests:
       cpu: "4"
       memory: 8Gi
   e2e-conformance-k8s:
+    limits:
+      memory: 9Gi
     requests:
       cpu: "1"
       memory: 300Mi
   hyperkube:
+    limits:
+      memory: 12Gi
     requests:
       cpu: "3"
       memory: 7Gi
   hypershift:
+    limits:
+      memory: 12Gi
     requests:
       cpu: "3"
       memory: 7Gi
   integration:
+    limits:
+      memory: 18Gi
     requests:
       cpu: "6"
       memory: 14Gi
   rpms:
+    limits:
+      memory: 10Gi
     requests:
       cpu: "4"
       memory: 8Gi
   tests:
+    limits:
+      memory: 12Gi
     requests:
       cpu: "3"
       memory: 7Gi
   unit:
+    limits:
+      memory: 11Gi
     requests:
       cpu: "6"
       memory: 8Gi
   verify:
+    limits:
+      memory: 12Gi
     requests:
       cpu: "3"
       memory: 8Gi
@@ -160,81 +190,75 @@ tests:
   commands: '# noop, just to force the building the `artifacts` image'
   container:
     from: artifacts
-- as: unit
-  commands: TMPDIR=/tmp/volume GOTEST_FLAGS='-p 8' TIMEOUT=180s JUNIT_REPORT=1 TEST_KUBE=true
-    KUBERNETES_SERVICE_HOST= hack/test-go.sh
+- artifact_dir: /tmp/artifacts
+  as: unit
+  commands: TMPDIR=/tmp/volume GOTEST_FLAGS='-p 8' ARTIFACT_DIR=/tmp/artifacts TIMEOUT=180s
+    JUNIT_REPORT=1 TEST_KUBE=true KUBERNETES_SERVICE_HOST= hack/test-go.sh
   container:
     from: src
     memory_backed_volume:
       size: 4Gi
-- as: verify
-  commands: JUNIT_REPORT=1 KUBERNETES_SERVICE_HOST= make verify -k
+- artifact_dir: /tmp/artifacts
+  as: verify
+  commands: ARTIFACT_DIR=/tmp/artifacts JUNIT_REPORT=1 KUBERNETES_SERVICE_HOST= make
+    verify -k
   container:
     from: bin
 - as: e2e-gcp
-  steps:
+  commands: TEST_SUITE=openshift/conformance/parallel run-tests
+  openshift_installer:
     cluster_profile: gcp
-    workflow: openshift-e2e-gcp
 - as: e2e-aws
-  steps:
+  commands: TEST_SUITE=openshift/conformance/parallel run-tests
+  openshift_installer:
     cluster_profile: aws
-    workflow: openshift-e2e-aws
 - as: e2e-azure
-  steps:
+  commands: TEST_SUITE=openshift/conformance/parallel run-tests
+  openshift_installer:
     cluster_profile: azure4
-    workflow: openshift-e2e-azure
-- as: e2e-agnostic-cmd
-  steps:
+- as: e2e-cmd
+  commands: TEST_SUITE=openshift/test-cmd run-tests
+  openshift_installer:
     cluster_profile: gcp
-    workflow: openshift-e2e-gcp-cmd
 - as: e2e-gcp-builds
-  steps:
+  commands: TEST_SUITE=openshift/build run-tests
+  openshift_installer:
     cluster_profile: gcp
-    workflow: openshift-e2e-gcp-builds
 - as: e2e-aws-disruptive
   commands: setup_ssh_bastion; TEST_SUITE=openshift/disruptive run-tests; TEST_SUITE=openshift/conformance/parallel
     run-tests
   openshift_installer:
     cluster_profile: aws
 - as: e2e-aws-jenkins
-  steps:
+  commands: TEST_SUITE=openshift/jenkins-e2e run-tests
+  openshift_installer:
     cluster_profile: aws
-    workflow: openshift-e2e-aws-jenkins
 - as: e2e-gcp-image-ecosystem
-  steps:
+  commands: TEST_SUITE=openshift/image-ecosystem run-tests
+  openshift_installer:
     cluster_profile: gcp
-    workflow: openshift-e2e-gcp-image-ecosystem
 - as: e2e-aws-image-registry
-  steps:
+  commands: TEST_SUITE=openshift/image-registry run-tests
+  openshift_installer:
     cluster_profile: aws
-    workflow: openshift-e2e-aws-image-registry
 - as: e2e-gcp-upgrade
-  steps:
+  commands: TEST_SUITE=all run-upgrade-tests
+  openshift_installer:
     cluster_profile: gcp
-    workflow: openshift-upgrade-gcp
+    upgrade: true
 - as: e2e-aws-serial
-  steps:
+  commands: TEST_SUITE=openshift/conformance/serial run-tests
+  openshift_installer:
     cluster_profile: aws
-    workflow: openshift-e2e-aws-serial
 - as: e2e-vsphere
-  steps:
+  commands: TEST_SUITE=openshift/conformance/parallel run-tests
+  openshift_installer_upi:
     cluster_profile: vsphere
-    env:
-      TEST_SUITE: openshift/conformance/parallel
-    workflow: openshift-e2e-vsphere-upi
+- as: launch-vsphere
+  commands: sleep 7200 & wait
+  openshift_installer_upi:
+    cluster_profile: vsphere
 - as: e2e-conformance-k8s
-  steps:
+  commands: test/extended/conformance-k8s.sh
+  openshift_installer_src:
     cluster_profile: aws
-    test:
-    - as: test
-      cli: latest
-      commands: test/extended/conformance-k8s.sh
-      from: src
-      resources:
-        requests:
-          cpu: 100m
-    workflow: ipi-aws
-zz_generated_metadata:
-  branch: release-4.3
-  org: openshift
-  repo: origin

@@ -1,34 +1,38 @@
 base_images:
   base:
-    name: "4.3"
+    name: "4.2"
     namespace: ocp
     tag: base
-binary_build_commands: make -f openshift-ci/Makefile build
+
+binary_build_commands: make build
+
 build_root:
   project_image:
     dockerfile_path: openshift-ci/Dockerfile.tests
+
 images:
-- dockerfile_path: openshift-ci/Dockerfile.tests
-  from: base
+- from: base
+  dockerfile_path: openshift-ci/Dockerfile.tests
   to: helm
+
+#promotion:
+#  name: "4.2"
+#  namespace: ocp
+
 resources:
   '*':
+    limits:
+      memory: 4Gi
     requests:
       cpu: 200m
       memory: 200Mi
+
 tag_specification:
-  name: "4.3"
+  name: "4.2"
   namespace: ocp
+
 tests:
 - as: unit
-  commands: make -f openshift-ci/Makefile unit
+  commands: make test-unit
   container:
     from: src
-- as: lint
-  commands: make -f openshift-ci/Makefile lint
-  container:
-    from: src
-zz_generated_metadata:
-  branch: master
-  org: redhat-developer
-  repo: helm

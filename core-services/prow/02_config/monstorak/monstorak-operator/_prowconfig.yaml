@@ -1,6 +1,0 @@
-branch-protection:
-  orgs:
-    monstorak:
-      repos:
-        monstorak-operator:
-          protect: false

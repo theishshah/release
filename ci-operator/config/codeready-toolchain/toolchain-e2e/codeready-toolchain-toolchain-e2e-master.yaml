@@ -1,53 +1,54 @@
+
 base_images:
   os:
     name: centos
     namespace: openshift
-    tag: "7"
-binary_build_commands: make build-with-operators
-build_root:
-  project_image:
-    dockerfile_path: openshift-ci/Dockerfile.tools
+    tag: '7'
+
+resources:
+  '*':
+    limits:
+      memory: 3Gi
+    requests:
+      memory: 250Mi
+      cpu: 100m
+
 images:
-- dockerfile_path: openshift-ci/Dockerfile.host.deploy
-  from: os
+- from: os
   inputs:
     bin:
       paths:
       - destination_dir: .
         source_path: /go/src/github.com/codeready-toolchain/toolchain-e2e/build/_output/bin/host-operator
+  dockerfile_path: openshift-ci/Dockerfile.host.deploy
   to: host-operator
-- dockerfile_path: openshift-ci/Dockerfile.member.deploy
-  from: os
+- from: os
   inputs:
     bin:
       paths:
       - destination_dir: .
         source_path: /go/src/github.com/codeready-toolchain/toolchain-e2e/build/_output/bin/member-operator
+  dockerfile_path: openshift-ci/Dockerfile.member.deploy
   to: member-operator
-- dockerfile_path: openshift-ci/Dockerfile.member.webhook.deploy
-  from: os
-  inputs:
-    bin:
-      paths:
-      - destination_dir: .
-        source_path: /go/src/github.com/codeready-toolchain/toolchain-e2e/build/_output/bin/member-operator-webhook
-  to: member-operator-webhook
-- dockerfile_path: openshift-ci/Dockerfile.registration.deploy
-  from: os
+- from: os
   inputs:
     bin:
       paths:
       - destination_dir: .
         source_path: /go/src/github.com/codeready-toolchain/toolchain-e2e/build/_output/bin/registration-service
+  dockerfile_path: openshift-ci/Dockerfile.registration.deploy
   to: registration-service
-resources:
-  '*':
-    requests:
-      cpu: 100m
-      memory: 250Mi
+
+build_root:
+  project_image:
+    dockerfile_path: openshift-ci/Dockerfile.tools
+
+binary_build_commands: make build-with-operators
+
 tag_specification:
-  name: "4.6"
+  name: "4.2"
   namespace: ocp
+
 tests:
 - as: build
   commands: make build
@@ -58,31 +59,6 @@ tests:
   container:
     from: src
 - as: e2e
-  steps:
+  commands: make test-e2e
+  openshift_installer_src:
     cluster_profile: aws
-    test:
-    - as: test
-      cli: latest
-      commands: make test-e2e
-      from: src
-      resources:
-        requests:
-          cpu: 100m
-    workflow: ipi-aws
-- as: perf
-  cron: 0 0 ? * *
-  steps:
-    cluster_profile: aws
-    test:
-    - as: test
-      cli: latest
-      commands: ARTIFACT_DIR=${ARTIFACT_DIR} make test-perf
-      from: src
-      resources:
-        requests:
-          cpu: 100m
-    workflow: ipi-aws
-zz_generated_metadata:
-  branch: master
-  org: codeready-toolchain
-  repo: toolchain-e2e

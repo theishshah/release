@@ -1,8 +1,0 @@
-branch-protection:
-  orgs:
-    openshift:
-      repos:
-        openshift-restclient-java:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci/pr

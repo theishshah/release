@@ -1,29 +1,26 @@
 periodics:
 - agent: kubernetes
-  cluster: build02
   decorate: true
-  extra_refs:
-  - base_ref: master
-    org: cluster-autoscaler-operator
-    repo: verification-tests
   interval: 3h
   name: periodic-ci-openshift-cluster-autoscaler-operator-e2e-aws-master
   spec:
     containers:
     - args:
+      - --artifact-dir=$(ARTIFACTS)
       - --git-ref=openshift/cluster-autoscaler-operator@master
-      - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
-      - --repo=verification-tests
       - --secret-dir=/usr/local/e2e-aws-operator-cluster-profile
       - --target=e2e-aws-operator
       - --template=/usr/local/e2e-aws-operator
-      - --gcs-upload-secret=/secrets/gcs/service-account.json
-      - --lease-server-credentials-file=/etc/boskos/credentials
       command:
       - ci-operator
       env:
       - name: CLUSTER_TYPE
         value: aws
+      - name: CONFIG_SPEC
+        valueFrom:
+          configMapKeyRef:
+            key: openshift-cluster-autoscaler-operator-master.yaml
+            name: ci-operator-master-configs
       - name: JOB_NAME_SAFE
         value: e2e-aws-operator
       - name: TEST_COMMAND
@@ -35,28 +32,13 @@ periodics:
         requests:
           cpu: 10m
       volumeMounts:
-      - mountPath: /etc/boskos
-        name: boskos
-        readOnly: true
       - mountPath: /usr/local/e2e-aws-operator-cluster-profile
         name: cluster-profile
-      - mountPath: /secrets/gcs
-        name: gcs-credentials
-        readOnly: true
       - mountPath: /usr/local/e2e-aws-operator
         name: job-definition
         subPath: cluster-launch-installer-src.yaml
-      - mountPath: /etc/pull-secret
-        name: pull-secret
-        readOnly: true
     serviceAccountName: ci-operator
     volumes:
-    - name: boskos
-      secret:
-        items:
-        - key: credentials
-          path: credentials
-        secretName: boskos-credentials
     - name: cluster-profile
       projected:
         sources:
@@ -65,34 +47,28 @@ periodics:
     - configMap:
         name: prow-job-cluster-launch-installer-src
       name: job-definition
-    - name: pull-secret
-      secret:
-        secretName: registry-pull-credentials
 - agent: kubernetes
-  cluster: build02
   decorate: true
-  extra_refs:
-  - base_ref: master
-    org: openshift
-    repo: cluster-autoscaler-operator
   interval: 3h
   name: periodic-ci-openshift-cluster-autoscaler-operator-e2e-azure-master
   spec:
     containers:
     - args:
+      - --artifact-dir=$(ARTIFACTS)
       - --git-ref=openshift/cluster-autoscaler-operator@master
-      - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
-      - --repo=cluster-autoscaler-operator
       - --secret-dir=/usr/local/e2e-azure-operator-cluster-profile
       - --target=e2e-azure-operator
       - --template=/usr/local/e2e-azure-operator
-      - --gcs-upload-secret=/secrets/gcs/service-account.json
-      - --lease-server-credentials-file=/etc/boskos/credentials
       command:
       - ci-operator
       env:
       - name: CLUSTER_TYPE
         value: azure4
+      - name: CONFIG_SPEC
+        valueFrom:
+          configMapKeyRef:
+            key: openshift-cluster-autoscaler-operator-master.yaml
+            name: ci-operator-master-configs
       - name: JOB_NAME_SAFE
         value: e2e-azure-operator
       - name: TEST_COMMAND
@@ -104,28 +80,13 @@ periodics:
         requests:
           cpu: 10m
       volumeMounts:
-      - mountPath: /etc/boskos
-        name: boskos
-        readOnly: true
       - mountPath: /usr/local/e2e-azure-operator-cluster-profile
         name: cluster-profile
-      - mountPath: /secrets/gcs
-        name: gcs-credentials
-        readOnly: true
       - mountPath: /usr/local/e2e-azure-operator
         name: job-definition
         subPath: cluster-launch-installer-src.yaml
-      - mountPath: /etc/pull-secret
-        name: pull-secret
-        readOnly: true
     serviceAccountName: ci-operator
     volumes:
-    - name: boskos
-      secret:
-        items:
-        - key: credentials
-          path: credentials
-        secretName: boskos-credentials
     - name: cluster-profile
       projected:
         sources:
@@ -134,34 +95,28 @@ periodics:
     - configMap:
         name: prow-job-cluster-launch-installer-src
       name: job-definition
-    - name: pull-secret
-      secret:
-        secretName: registry-pull-credentials
 - agent: kubernetes
-  cluster: build02
   decorate: true
-  extra_refs:
-  - base_ref: master
-    org: openshift
-    repo: cluster-autoscaler-operator
   interval: 3h
   name: periodic-ci-openshift-cluster-autoscaler-operator-e2e-gcp-master
   spec:
     containers:
     - args:
+      - --artifact-dir=$(ARTIFACTS)
       - --git-ref=openshift/cluster-autoscaler-operator@master
-      - --image-import-pull-secret=/etc/pull-secret/.dockerconfigjson
-      - --repo=cluster-autoscaler-operator
       - --secret-dir=/usr/local/e2e-gcp-operator-cluster-profile
       - --target=e2e-gcp-operator
       - --template=/usr/local/e2e-gcp-operator
-      - --gcs-upload-secret=/secrets/gcs/service-account.json
-      - --lease-server-credentials-file=/etc/boskos/credentials
       command:
       - ci-operator
       env:
       - name: CLUSTER_TYPE
         value: gcp
+      - name: CONFIG_SPEC
+        valueFrom:
+          configMapKeyRef:
+            key: openshift-cluster-autoscaler-operator-master.yaml
+            name: ci-operator-master-configs
       - name: JOB_NAME_SAFE
         value: e2e-gcp-operator
       - name: TEST_COMMAND
@@ -173,28 +128,13 @@ periodics:
         requests:
           cpu: 10m
       volumeMounts:
-      - mountPath: /etc/boskos
-        name: boskos
-        readOnly: true
       - mountPath: /usr/local/e2e-gcp-operator-cluster-profile
         name: cluster-profile
-      - mountPath: /secrets/gcs
-        name: gcs-credentials
-        readOnly: true
       - mountPath: /usr/local/e2e-gcp-operator
         name: job-definition
         subPath: cluster-launch-installer-src.yaml
-      - mountPath: /etc/pull-secret
-        name: pull-secret
-        readOnly: true
     serviceAccountName: ci-operator
     volumes:
-    - name: boskos
-      secret:
-        items:
-        - key: credentials
-          path: credentials
-        secretName: boskos-credentials
     - name: cluster-profile
       projected:
         sources:
@@ -203,6 +143,3 @@ periodics:
     - configMap:
         name: prow-job-cluster-launch-installer-src
       name: job-definition
-    - name: pull-secret
-      secret:
-        secretName: registry-pull-credentials

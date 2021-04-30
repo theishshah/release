@@ -1,8 +1,0 @@
-{
-	"path": "optional-operators/ci/vsphere/optional-operators-ci-vsphere-workflow.yaml",
-	"owners": {
-		"approvers": [
-			"dptp"
-		]
-	}
-}

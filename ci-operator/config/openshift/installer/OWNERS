@@ -6,13 +6,11 @@ approvers:
 - crawford
 - sdodson
 - smarterclayton
-- staebler
 - wking
 options: {}
 reviewers:
-- e-tienne
+- jcpowermac
 - jhixson74
 - jstuever
 - mtnbikenc
 - patrickdillon
-- rna-afk

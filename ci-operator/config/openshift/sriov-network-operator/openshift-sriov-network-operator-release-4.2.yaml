@@ -3,10 +3,6 @@ base_images:
     name: "4.2"
     namespace: ocp
     tag: base
-  openshift_release_golang-1.10:
-    name: release
-    namespace: openshift
-    tag: golang-1.10
 build_root:
   image_stream_tag:
     name: release
@@ -15,23 +11,17 @@ build_root:
 images:
 - dockerfile_path: Dockerfile.rhel7
   from: base
-  inputs:
-    openshift_release_golang-1.10:
-      as:
-      - registry.svc.ci.openshift.org/openshift/release:golang-1.10
   to: sriov-network-operator
 - dockerfile_path: Dockerfile.sriov-network-config-daemon.rhel7
   from: base
-  inputs:
-    openshift_release_golang-1.10:
-      as:
-      - registry.svc.ci.openshift.org/openshift/release:golang-1.10
   to: sriov-network-config-daemon
 promotion:
   name: "4.2"
   namespace: ocp
 resources:
   '*':
+    limits:
+      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
@@ -40,10 +30,6 @@ tag_specification:
   namespace: ocp
 tests:
 - as: e2e-aws
-  steps:
+  commands: TEST_SUITE=openshift/conformance/parallel run-tests
+  openshift_installer:
     cluster_profile: aws
-    workflow: openshift-e2e-aws
-zz_generated_metadata:
-  branch: release-4.2
-  org: openshift
-  repo: sriov-network-operator

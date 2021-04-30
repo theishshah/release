@@ -2,16 +2,11 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
-- damemi
-- ingvagabund
-- mfojtik
+- aveshagarwal
+- jayunit100
 - ravisantoshgudimetla
-- soltysh
-- sttts
 options: {}
 reviewers:
-- damemi
-- ingvagabund
+- aveshagarwal
+- jayunit100
 - ravisantoshgudimetla
-- soltysh
-- sttts

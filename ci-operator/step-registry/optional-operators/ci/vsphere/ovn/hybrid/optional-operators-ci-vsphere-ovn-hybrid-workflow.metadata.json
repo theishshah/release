@@ -1,8 +1,0 @@
-{
-	"path": "optional-operators/ci/vsphere/ovn/hybrid/optional-operators-ci-vsphere-ovn-hybrid-workflow.yaml",
-	"owners": {
-		"approvers": [
-			"dptp"
-		]
-	}
-}

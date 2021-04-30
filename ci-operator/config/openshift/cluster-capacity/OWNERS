@@ -2,9 +2,11 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/guide/owners.md
 
 approvers:
-- damemi
+- aveshagarwal
+- hodovska
 - ingvagabund
 options: {}
 reviewers:
-- damemi
+- aveshagarwal
+- hodovska
 - ingvagabund

@@ -1,47 +1,27 @@
-base_images:
-  coreos_coreos-assembler_latest:
-    name: coreos-assembler
-    namespace: coreos
-    tag: latest
-  coreos_fcos-buildroot_testing-devel:
-    name: fcos-buildroot
-    namespace: coreos
-    tag: testing-devel
-binary_build_commands: ./ci/build.sh && make install
 build_root:
   image_stream_tag:
-    name: fcos-buildroot
     namespace: coreos
-    tag: testing-devel
-images:
-- dockerfile_path: ci/prow/Dockerfile
-  to: rpmostree-fcos-e2e
+    name: cosa-buildroot
+    tag: latest
+
+# With this we build a container image derived from cosa-buildroot
+# that contains new rpm-ostree binaries.  From there...since this
+# cluster doesn't support recursive containerization or virt,
+# we can't do much interesting to test it today.  But hopefully
+# that will soon change.
+# https://github.com/openshift/release/issues/4892
+binary_build_commands: env SKIP_INSTALLDEPS=1 ./ci/build-check.sh
+
+tests:
+- as: sanity
+  commands: rpm-ostree --version
+  container:
+    from: bin
+
 resources:
   '*':
-    requests:
-      cpu: 1000m
-      memory: 1Gi
-  fcos-e2e:
     limits:
-      devices.kubevirt.io/kvm: "1"
+      memory: 6Gi
     requests:
       cpu: 1000m
-      devices.kubevirt.io/kvm: "1"
-      memory: 2Gi
-tests:
-- as: build-clang
-  commands: ./ci/clang-build-check.sh
-  container:
-    from: src
-- as: clang-analyzer
-  commands: ./ci/clang-analyzer.sh
-  container:
-    from: src
-- as: fcos-e2e
-  commands: fcos-e2e
-  container:
-    from: rpmostree-fcos-e2e
-zz_generated_metadata:
-  branch: master
-  org: coreos
-  repo: rpm-ostree
+      memory: 3Gi

@@ -1,8 +1,0 @@
-{
-	"path": "optional-operators/ci/gcp/upgrade/optional-operators-ci-gcp-upgrade-workflow.yaml",
-	"owners": {
-		"approvers": [
-			"dptp"
-		]
-	}
-}

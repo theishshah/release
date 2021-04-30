@@ -10,18 +10,11 @@ set -o pipefail
 workdir="$( mktemp -d )"
 trap 'rm -rf "${workdir}"' EXIT
 
-base_dir="${1:-}"
-
-if [[ ! -d "${base_dir}" ]]; then
-  echo "Expected a single argument: a path to a directory with release repo layout"
-  exit 1
-fi
-
-prow_config_dir="${base_dir}/core-services/prow/02_config/"
+prow_config_dir="$( dirname "${BASH_SOURCE[0]}" )/../core-services/prow/02_config/"
 
 cp -r "${prow_config_dir}"* "${workdir}"
 
-determinize-prow-config --prow-config-dir "${workdir}" --sharded-prow-config-base-dir "${workdir}"
+determinize-prow-config --prow-config-dir "${workdir}"
 
 
 if ! diff -Naupr "${prow_config_dir}" "${workdir}"> "${workdir}/diff"; then

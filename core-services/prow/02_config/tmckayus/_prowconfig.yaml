@@ -1,4 +1,0 @@
-branch-protection:
-  orgs:
-    tmckayus:
-      unmanaged: true

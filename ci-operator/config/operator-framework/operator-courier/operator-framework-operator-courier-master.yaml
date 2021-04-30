@@ -1,5 +1,6 @@
 base_images:
   base:
+    cluster: https://api.ci.openshift.org
     name: fedora
     namespace: openshift
     tag: "29"
@@ -12,6 +13,8 @@ images:
   to: integration
 resources:
   '*':
+    limits:
+      memory: 2Gi
     requests:
       cpu: 100m
       memory: 100Mi
@@ -21,9 +24,5 @@ tests:
   container:
     from: integration
   secret:
-    mount_path: /tmp/secret
     name: operator-manifests-test-credentials
-zz_generated_metadata:
-  branch: master
-  org: operator-framework
-  repo: operator-courier
+    mount_path: /tmp/secret

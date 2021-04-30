@@ -1,23 +1,23 @@
+tag_specification:
+  name: '4.0'
+  namespace: ocp
+promotion:
+  name: 'verification-tests'
+  namespace: 'ci'
 build_root:
   image_stream_tag:
-    name: verification-tests
-    namespace: ci
-    tag: centos
+    cluster: 'https://api.ci.openshift.org'
+    name: 'verification-tests'
+    namespace: 'ci'
+    tag: 'centos'
 images:
-- dockerfile_path: tools/openshift-ci/Dockerfile.centos
-  to: centos
-promotion:
-  name: verification-tests
-  namespace: ci
+- to: centos
+  dockerfile_path: tools/openshift-ci/Dockerfile.centos
 resources:
   '*':
+    limits:
+      memory: 4Gi
     requests:
       cpu: 100m
       memory: 200Mi
-tag_specification:
-  name: "4.1"
-  namespace: ocp
-zz_generated_metadata:
-  branch: master
-  org: openshift
-  repo: verification-tests
+tests: []

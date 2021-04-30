@@ -1,0 +1,408 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: origin-release
+metadata:
+  name: origin-release
+  openshift.io/display-name: Origin Release Environment
+  iconClass: icon-go-gopher
+  template.openshift.io/long-description: |-
+    The OpenShift Origin release environment container provides a workspace
+    in which developers can work with the Origin source code without needing
+    to install any tools other than a container runtime on their system.
+parameters:
+- name: SOURCE_REF
+  displayName: Source Ref
+  description: Git reference to use for building the Origin release environment image
+  value: master
+  required: false
+- name: SOURCE_URL
+  displayName: Source URL
+  description: Git source URL to use for building the Origin release environment image
+  value: https://github.com/openshift/release.git
+  required: false
+- name: PUSH_REPOSITORY
+  value: docker.io/openshift/origin-release
+  required: false
+- name: BASE_REPOSITORY
+  value: centos:7
+objects:
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    labels:
+      app: origin-release
+    name: origin-release
+  spec:
+    tags:
+    - name: base
+      from:
+        kind: DockerImage
+        name: ${BASE_REPOSITORY}
+      importPolicy:
+        scheduled: true
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      app: origin-release
+    name: "origin-release-golang-1.8"
+  spec:
+    successfulBuildsHistoryLimit: 1
+    failedBuildsHistoryLimit: 2
+    output:
+      to:
+        kind: DockerImage
+        name: "${PUSH_REPOSITORY}:golang-1.8"
+      pushSecret:
+        name: "dockerhub"
+    source:
+      git:
+        ref: "${SOURCE_REF}"
+        uri: "${SOURCE_URL}"
+      contextDir: "projects/origin-release/golang-1.8/"
+      type: Git
+    strategy:
+      dockerStrategy:
+        from:
+          kind: ImageStreamTag
+          name: origin-release:base
+        imageOptimizationPolicy: SkipLayers
+    triggers:
+    - imageChange: {} 
+      type: ImageChange       
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      app: origin-release
+    name: "origin-release-golang-1.9"
+  spec:
+    successfulBuildsHistoryLimit: 1
+    failedBuildsHistoryLimit: 2
+    output:
+      to:
+        kind: DockerImage
+        name: "${PUSH_REPOSITORY}:golang-1.9"
+      pushSecret:
+        name: "dockerhub"
+    source:
+      git:
+        ref: "${SOURCE_REF}"
+        uri: "${SOURCE_URL}"
+      contextDir: "projects/origin-release/golang-1.9/"
+      type: Git
+    strategy:
+      dockerStrategy:
+        from:
+          kind: ImageStreamTag
+          name: origin-release:base
+        imageOptimizationPolicy: SkipLayers
+    triggers:
+    - imageChange: {} 
+      type: ImageChange       
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      app: origin-release
+    name: "origin-release-golang-1.10"
+  spec:
+    successfulBuildsHistoryLimit: 1
+    failedBuildsHistoryLimit: 2
+    output:
+      to:
+        kind: DockerImage
+        name: "${PUSH_REPOSITORY}:golang-1.10"
+      pushSecret:
+        name: "dockerhub"
+    source:
+      git:
+        ref: "${SOURCE_REF}"
+        uri: "${SOURCE_URL}"
+      contextDir: "projects/origin-release/golang-1.10/"
+      type: Git
+    strategy:
+      dockerStrategy:
+        from:
+          kind: ImageStreamTag
+          name: origin-release:base
+        imageOptimizationPolicy: SkipLayers
+    triggers:
+    - imageChange: {} 
+      type: ImageChange       
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      app: origin-release
+    name: "origin-release-golang-1.11"
+  spec:
+    successfulBuildsHistoryLimit: 1
+    failedBuildsHistoryLimit: 2
+    output:
+      to:
+        kind: DockerImage
+        name: "${PUSH_REPOSITORY}:golang-1.11"
+      pushSecret:
+        name: "dockerhub"
+    source:
+      git:
+        ref: "${SOURCE_REF}"
+        uri: "${SOURCE_URL}"
+      contextDir: "projects/origin-release/golang-1.11/"
+      type: Git
+    strategy:
+      dockerStrategy:
+        from:
+          kind: ImageStreamTag
+          name: origin-release:base
+        imageOptimizationPolicy: SkipLayers
+    triggers:
+    - imageChange: {}
+      type: ImageChange
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      app: origin-release
+    name: "origin-release-golang-1.12"
+  spec:
+    successfulBuildsHistoryLimit: 1
+    failedBuildsHistoryLimit: 2
+    output:
+      to:
+        kind: DockerImage
+        name: "${PUSH_REPOSITORY}:golang-1.12"
+      pushSecret:
+        name: "dockerhub"
+    source:
+      git:
+        ref: "${SOURCE_REF}"
+        uri: "${SOURCE_URL}"
+      contextDir: "projects/origin-release/golang-1.12/"
+      type: Git
+    strategy:
+      dockerStrategy:
+        from:
+          kind: ImageStreamTag
+          name: origin-release:base
+        imageOptimizationPolicy: SkipLayers
+    triggers:
+    - imageChange: {}
+      type: ImageChange
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      app: origin-release
+    name: "origin-release-golang-1.13"
+  spec:
+    successfulBuildsHistoryLimit: 1
+    failedBuildsHistoryLimit: 2
+    output:
+      to:
+        kind: DockerImage
+        name: "${PUSH_REPOSITORY}:golang-1.13"
+      pushSecret:
+        name: "dockerhub"
+    source:
+      git:
+        ref: "${SOURCE_REF}"
+        uri: "${SOURCE_URL}"
+      contextDir: "projects/origin-release/golang-1.13/"
+      type: Git
+    strategy:
+      dockerStrategy:
+        from:
+          kind: ImageStreamTag
+          name: origin-release:base
+        imageOptimizationPolicy: SkipLayers
+    triggers:
+    - imageChange: {}
+      type: ImageChange
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      app: origin-release
+    name: "origin-release-rhel-7-golang-1.11"
+  spec:
+    successfulBuildsHistoryLimit: 1
+    failedBuildsHistoryLimit: 2
+    output:
+      to:
+        kind: DockerImage
+        name: "${PUSH_REPOSITORY}:rhel-7-golang-1.11"
+      pushSecret:
+        name: "dockerhub"
+    source:
+      git:
+        ref: "${SOURCE_REF}"
+        uri: "${SOURCE_URL}"
+      contextDir: "projects/origin-release/rhel-7-golang-1.11/"
+      type: Git
+    strategy:
+      dockerStrategy:
+        from:
+          namespace: ocp
+          kind: ImageStreamTag
+          name: "builder-base:rhel-7-golang-1.11"
+        imageOptimizationPolicy: SkipLayers
+    triggers:
+      - imageChange: {}
+        type: ImageChange
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      app: origin-release
+    name: "origin-release-rhel-7-golang-1.12"
+  spec:
+    successfulBuildsHistoryLimit: 1
+    failedBuildsHistoryLimit: 2
+    output:
+      to:
+        kind: DockerImage
+        name: "${PUSH_REPOSITORY}:rhel-7-golang-1.12"
+      pushSecret:
+        name: "dockerhub"
+    source:
+      git:
+        ref: "${SOURCE_REF}"
+        uri: "${SOURCE_URL}"
+      contextDir: "projects/origin-release/rhel-7-golang-1.12/"
+      type: Git
+    strategy:
+      dockerStrategy:
+        from:
+          namespace: ocp
+          kind: ImageStreamTag
+          name: "builder-base:rhel-7-golang-1.12"
+        imageOptimizationPolicy: SkipLayers
+    triggers:
+      - imageChange: {}
+        type: ImageChange
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      app: origin-release
+    name: "origin-release-rhel-7-golang-1.13"
+  spec:
+    successfulBuildsHistoryLimit: 1
+    failedBuildsHistoryLimit: 2
+    output:
+      to:
+        kind: DockerImage
+        name: "${PUSH_REPOSITORY}:rhel-7-golang-1.13"
+      pushSecret:
+        name: "dockerhub"
+    source:
+      git:
+        ref: "${SOURCE_REF}"
+        uri: "${SOURCE_URL}"
+      contextDir: "projects/origin-release/rhel-7-golang-1.13/"
+      type: Git
+    strategy:
+      dockerStrategy:
+        from:
+          namespace: ocp
+          kind: ImageStreamTag
+          name: "builder-base:rhel-7-golang-1.13"
+        imageOptimizationPolicy: SkipLayers
+    triggers:
+      - imageChange: {}
+        type: ImageChange
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      app: origin-release
+    name: "origin-release-rhel-8-golang-1.12"
+  spec:
+    successfulBuildsHistoryLimit: 1
+    failedBuildsHistoryLimit: 2
+    output:
+      to:
+        kind: DockerImage
+        name: "${PUSH_REPOSITORY}:rhel-8-golang-1.12"
+      pushSecret:
+        name: "dockerhub"
+    source:
+      git:
+        ref: "${SOURCE_REF}"
+        uri: "${SOURCE_URL}"
+      contextDir: "projects/origin-release/rhel-8-golang-1.12/"
+      type: Git
+    strategy:
+      dockerStrategy:
+        from:
+          namespace: ocp
+          kind: ImageStreamTag
+          name: "builder-base:rhel-8-golang-1.12"
+        imageOptimizationPolicy: SkipLayers
+    triggers:
+      - imageChange: {}
+        type: ImageChange
+
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      app: origin-release
+    name: "origin-release-nodejs-8"
+  spec:
+    successfulBuildsHistoryLimit: 1
+    failedBuildsHistoryLimit: 2
+    output:
+      to:
+        kind: DockerImage
+        name: "${PUSH_REPOSITORY}:nodejs-8"
+      pushSecret:
+        name: "dockerhub"
+    source:
+      git:
+        ref: "${SOURCE_REF}"
+        uri: "${SOURCE_URL}"
+      contextDir: "projects/origin-release/nodejs-8/"
+      type: Git
+    strategy:
+      dockerStrategy:
+        from:
+          kind: DockerImage
+          name: centos/nodejs-8-centos7:latest
+        imageOptimizationPolicy: SkipLayers
+    triggers:
+    - imageChange: {}
+      type: ImageChange
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      app: origin-release
+    name: "origin-release-nodejs-8-browser-tests"
+  spec:
+    successfulBuildsHistoryLimit: 1
+    failedBuildsHistoryLimit: 2
+    output:
+      to:
+        kind: DockerImage
+        name: "${PUSH_REPOSITORY}:nodejs-8-browser-tests"
+      pushSecret:
+        name: "dockerhub"
+    source:
+      git:
+        ref: "${SOURCE_REF}"
+        uri: "${SOURCE_URL}"
+      contextDir: "projects/origin-release/nodejs-8-browser-tests/"
+      type: Git
+    strategy:
+      dockerStrategy:
+        from:
+          kind: DockerImage
+          name: openshift/origin-release:nodejs-8
+        imageOptimizationPolicy: SkipLayers
+    triggers:
+    - imageChange: {}
+      type: ImageChange

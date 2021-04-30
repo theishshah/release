@@ -3,14 +3,21 @@
 
 approvers:
 - bertinatto
+- childsb
 - gnufied
-- huffmanca
 - jsafrane
+- lpabon
+- msau42
+- saad-ali
+- sbezverk
 - tsmetana
+- vladimirvivien
 options: {}
 reviewers:
-- bertinatto
-- gnufied
-- huffmanca
+- davidz627
 - jsafrane
-- tsmetana
+- lpabon
+- msau42
+- saad-ali
+- sbezverk
+- vladimirvivien

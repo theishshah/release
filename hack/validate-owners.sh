@@ -2,28 +2,23 @@
 
 # This script ensures that all component config files are accompanied by OWNERS file
 
+#!/bin/bash
 set -euo pipefail
 
-base_dir="${1:-}"
+WHITELIST=$(sort <<'EOF'
+ci-operator/config/openshift/kubernetes-metrics-server
+ci-operator/jobs/openshift/kubernetes-metrics-server
+ci-operator/config/openshift/origin-metrics
+ci-operator/jobs/openshift/origin-metrics
+ci-operator/config/openshift/origin-web-console
+ci-operator/jobs/openshift/origin-web-console
+ci-operator/config/openshift/origin-web-console-server
+ci-operator/jobs/openshift/origin-web-console-server
+ci-operator/jobs/openvswitch/ovn-kubernetes
+EOF
+)
 
-if [[ ! -d "${base_dir}" ]]; then
-  echo "Expected at least one argument: a path to a directory with release repo layout"
-  exit 1
-fi
-
-allowlist_file="${2:-}"
-WHITELIST=""
-if [[ -f "$allowlist_file" ]]; then
-  WHITELIST="$( sort "$allowlist_file" )"
-elif [[ -n "$allowlist_file" ]]; then
-  echo "Expected second argument to be a path to a file with an allowlist: '$allowlist_file'"
-  exit 1
-fi
-
-# mindepth for "jobs" and "configs" is 2, while "step-registry" is 1, so do these in separate steps
-no_owners_jobs_configs=$(find "${base_dir}/ci-operator/config/" "${base_dir}/ci-operator/jobs/" -mindepth 2 -not -path "*openshift-priv*" -type d ! -exec test -e '{}/OWNERS' \; -print | sort | ( grep -oP "^${base_dir}/\K.*" || true ))
-no_owners_reg=$(find "${base_dir}/ci-operator/step-registry" -mindepth 1 -type d ! -exec test -e '{}/OWNERS' \; -print | sort | ( grep -oP "^${base_dir}/\K.*" || true))
-no_owners=$(echo "${no_owners_jobs_configs}"$'\n'"${no_owners_reg}" | sort)
+no_owners=$(find ci-operator/config/ ci-operator/jobs/ -mindepth 2 -type d ! -exec test -e '{}/OWNERS' \; -print | sort)
 false_neg=$(comm -13 <(echo "$WHITELIST") <(echo "$no_owners"))
 false_pos=$(comm -23 <(echo "$WHITELIST") <(echo "$no_owners"))
 
@@ -45,14 +40,15 @@ $false_neg
 EOF
 fi
 
+
 if [[ "$false_pos" ]]; then
   cat << EOF
-ERROR: Directory that was previously allowlisted as not containing
+ERROR: Directory that was previously whitelisted as not containing
 ERROR: an OWNERS file is now containing the file, so it no longer
-ERROR: needs to be allowlisted. Please remove the appropriate line
-ERROR: from $allowlist_file.
+ERROR: needs to be whitelisted. Please remove the appropriate line
+ERROR: from hack/validate-owners.sh script.
 
-ERROR: Directories to be removed from allowlist:
+ERROR: Directories to be removed from whitelist:
 
 $false_pos
 EOF
